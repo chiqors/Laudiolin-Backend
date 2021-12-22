@@ -1,5 +1,6 @@
 /* Imports. */
-import {logger} from "../index";
+// @ts-ignore
+import {logger} from "app/index";
 import {Request, Response, Router} from "express";
 
 /**
