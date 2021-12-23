@@ -1,14 +1,19 @@
-import {logger} from "../index";
-import constants from "../constants";
-import * as youtube from "./youtube";
+import {logger} from "app/index";
+import {SearchResult, SearchResults} from "app/types";
+import constants from "app/constants";
+import filter from "filters/spotifySong";
 import SpotifyWebApi from "spotify-web-api-node";
-import {SearchResult, SearchResults} from "../types";
+
+import * as youtube from "./youtube";
 
 const spotify = new SpotifyWebApi({
     clientId: constants.SPOTIFY_CLIENT_ID,
     clientSecret: constants.SPOTIFY_CLIENT_SECRET,
     redirectUri: constants.SPOTIFY_REDIRECT_URI
 }); authorize(); // Authorize the Spotify API.
+
+// Cached, filtered search results.
+const cache: {[key: string]: SearchResults} = {};
 
 /**
  * Authorizes with the Spotify API.
@@ -25,14 +30,21 @@ export function authorize(): void {
 /**
  * Performs a Spotify search.
  * @param query The query to search for.
+ * @param smartFilter Whether to perform a smart filter on the results.
  */
-export async function search(query: string): Promise<SearchResults> {
+export async function search(query: string, smartFilter: boolean = false): Promise<SearchResults> {
     const search = await spotify.searchTracks(query);
     const results = search.body.tracks.items.map(track => {
         return parseTrack(track);
-    });
+    }).slice(0, 8);
 
-    return {top: results[0], results};
+    // Return result data.
+    const data = {top: results[0], results};
+    if(!smartFilter) return data;
+
+    // Return cached/filtered data.
+    if(cache[query]) return cache[query];
+    return cache[query] = await filter(data);
 }
 
 /**

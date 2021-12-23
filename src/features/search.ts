@@ -1,11 +1,11 @@
 /* Imports. */
-import {logger} from "../index";
-import constants from "../constants";
+import {logger} from "app/index";
+import constants from "app/constants";
 import {SearchEngine, SearchResult, SearchResults} from "../types.js";
 import {Request, Response, Router} from "express";
 
-import * as youtube from "../engines/youtube";
-import * as spotify from "../engines/spotify";
+import * as youtube from "engines/youtube";
+import * as spotify from "engines/spotify";
 
 const blankResult: SearchResult = {
     artist: "", duration: 0, icon: "", title: "", url: ""
@@ -25,6 +25,9 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
     const query: string = req.params.query;
     const engine: SearchEngine = (<SearchEngine> req.query.query) || "YouTube";
 
+    // Pull filter settings.
+    const filter: string = (<string> req.query.filter) || "none";
+
     // Perform a search request.
     let result: SearchResults = noResults;
     switch(engine) {
@@ -32,7 +35,7 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
             result = await youtube.search(query);
             break;
         case "Spotify":
-            result = await spotify.search(query);
+            result = await spotify.search(query, filter == "smart");
             break;
         case "SoundCloud":
             // TODO: Perform SoundCloud search.

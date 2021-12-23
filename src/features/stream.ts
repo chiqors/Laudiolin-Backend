@@ -1,9 +1,8 @@
 /* Imports. */
-import {logger} from "../index";
-import constants from "../constants";
+import constants from "app/constants";
 import {Request, Response, Router} from "express";
-import * as youtube from "../engines/youtube";
-import * as spotify from "../engines/spotify";
+import * as youtube from "engines/youtube";
+import * as spotify from "engines/spotify";
 
 /**
  * Download the specified video.

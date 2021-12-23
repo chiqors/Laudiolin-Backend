@@ -1,7 +1,7 @@
-import {logger} from "../index";
-import constants from "../constants";
+import {logger} from "app/index";
+import constants from "app/constants";
 import {Innertube} from "youtubei.js";
-import {SearchResults, SearchResult} from "../types";
+import {SearchResults, SearchResult} from "app/types";
 import {existsSync, createWriteStream} from "node:fs";
 import Video from "youtubei.js/dist/src/parser/classes/Video";
 import {streamToIterable} from "youtubei.js/dist/src/utils/Utils";
@@ -21,7 +21,7 @@ export async function search(query: string): Promise<SearchResults> {
     const results = search.videos.map(video => {
         if(video instanceof Video)
             return parseVideo(video);
-    });
+    }).slice(0, 8);
 
     return {top: results[0], results};
 }
