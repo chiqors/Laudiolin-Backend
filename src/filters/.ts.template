@@ -1,0 +1,13 @@
+/* Imports. */
+// @ts-ignore
+import {logger} from "app/index";
+
+/**
+ * Filters the specified data.
+ *
+ * @param data The data to filter.
+ * @return The filtered data.
+ */
+export default async function(data: object): Promise<object> {
+    return {};
+}

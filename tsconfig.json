@@ -3,11 +3,22 @@
     "module": "commonjs",
     "target": "es2022",
     "outDir": "build",
+    "baseUrl": "src",
     "moduleResolution": "node",
 
     "sourceMap": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+
+    "paths": {
+      "app/*": ["*"],
+      "engines/*": ["engines/*"],
+      "features/*": ["features/*"],
+      "filters/*": ["filters/*"]
+    }
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
   },
   "exclude": ["node_modules", "build"]
 }
