@@ -11,8 +11,7 @@
     "start": "node .",
     "start:dev": "ts-node src/index.ts",
     "compile": "tsc",
-    "package": "ncc build build/index.js -o js --target es2022",
-    "build": "npm run compile && npm run package"
+    "build": "ncc build src/index.ts -o js -m --target es2022"
   },
 
   "dependencies": {

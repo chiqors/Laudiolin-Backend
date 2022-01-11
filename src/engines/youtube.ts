@@ -1,15 +1,13 @@
 import {logger} from "../index";
 import constants from "../constants";
-import {Innertube, UniversalCache} from "youtubei.js";
+import {Innertube} from "youtubei.js";
 import {SearchResults, SearchResult} from "../types";
 import {existsSync, createWriteStream} from "node:fs";
 import Video from "youtubei.js/dist/src/parser/classes/Video";
 import {streamToIterable} from "youtubei.js/dist/src/utils/Utils";
 
 let youtube = undefined;
-Innertube.create({
-    cache: new UniversalCache()
-}).then(instance => {
+Innertube.create().then(instance => {
     youtube = instance;
     logger.info("Successfully authenticated with the YouTube API.");
 });
