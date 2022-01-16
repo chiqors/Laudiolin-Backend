@@ -1,5 +1,5 @@
 /* Imports. */
-import {logger} from "../index.js";
+import {logger} from "../index";
 import {Request, Response, Router} from "express";
 
 /**

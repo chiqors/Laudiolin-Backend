@@ -12,7 +12,7 @@ export type SearchResult = {
     artist: string;
     icon: string;
     url: string;
-    override?: string;
+    id?: string;
     duration: number;
 };
 export type SearchResults = {

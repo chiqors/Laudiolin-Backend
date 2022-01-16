@@ -38,7 +38,12 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
             // TODO: Perform SoundCloud search.
             break;
         case "all":
-            // TODO: Perform a search on all engines.
+            const spotifyResults = await spotify.search(query);
+            const youtubeResults = await youtube.search(query);
+            result = {
+                top: spotifyResults.top,
+                results: spotifyResults.results.concat(youtubeResults.results)
+            };
             break;
     }
 

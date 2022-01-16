@@ -31,5 +31,8 @@ export default {
     /* No search results. */
     NO_RESULTS: () => {
         return {timestamp: Date.now(), results: [], code: 404, message: "No results were found."};
+    },
+    INVALID_ARGUMENTS: () => {
+        return {timestamp: Date.now(), code: 400, message: "Invalid arguments were provided."};
     }
 };
