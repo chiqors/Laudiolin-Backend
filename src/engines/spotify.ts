@@ -17,10 +17,6 @@ export function authorize(): void {
     spotify.clientCredentialsGrant().then(data => {
         spotify.setAccessToken(data.body["access_token"]);
         logger.info("Successfully authenticated with the Spotify API.");
-
-        search("風與約定").then(results => {
-            download(results.top.override).then(() => console.log("finished downloading"))
-        })
     }).catch(error => {
         logger.error("Failed to authenticate with the Spotify API.", error);
     });
@@ -49,7 +45,7 @@ export function parseTrack(track: any): SearchResult {
         artist: track.artists[0].name,
         icon: track.album.images[0].url,
         url: track.external_urls.spotify,
-        override: track.external_ids.isrc,
+        id: track.external_ids.isrc,
         duration: track.duration_ms
     };
 }

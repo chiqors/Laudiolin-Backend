@@ -2,8 +2,9 @@ import {logger} from "../index";
 import constants from "../constants";
 import {Innertube, UniversalCache} from "youtubei.js";
 import {SearchResults, SearchResult} from "../types";
-import {existsSync, createWriteStream} from "fs";
+import {existsSync, createWriteStream} from "node:fs";
 import Video from "youtubei.js/dist/src/parser/classes/Video";
+import {streamToIterable} from "youtubei.js/dist/src/utils/Utils";
 
 let youtube = undefined;
 Innertube.create({
@@ -55,13 +56,15 @@ export function extractId(url: string): string {
  * @param url The URL of the video to download.
  */
 export async function download(url: string): Promise<string> {
+    const id: string = url.includes("http") ? extractId(url) : url;
+
     // Create a stream for the video.
-    const stream = await youtube.download(extractId(url), {
+    const stream = await youtube.download(id, {
         type: "audio", quality: "best", format: "any"
     });
 
     // Save the file to the disk.
-    const filePath = `${constants.STORAGE_PATH}/${extractId(url)}.mp3`;
+    const filePath = `${constants.STORAGE_PATH}/${id}.mp3`;
 
     // Check if the file already exists.
     if(existsSync(filePath)) {
@@ -69,7 +72,7 @@ export async function download(url: string): Promise<string> {
     }
 
     const file = createWriteStream(filePath);
-    for await (const chunk of stream)
+    for await (const chunk of streamToIterable(stream))
         file.write(chunk);
 
     // Return the path to the file.
