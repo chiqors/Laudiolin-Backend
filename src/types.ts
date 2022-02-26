@@ -55,7 +55,7 @@ export type User = {
  * Search.
  */
 
-export type SearchEngine = "YouTube" | "Spotify" | "SoundCloud" | "all";
+export type SearchEngine = "YouTube" | "Spotify" | "SoundCloud" | "All";
 export type SearchResult = Track & {
     id?: string;
 };

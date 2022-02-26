@@ -4,11 +4,12 @@ import constants from "app/constants";
 import {SearchEngine, SearchResult, SearchResults} from "../types.js";
 import {Request, Response, Router} from "express";
 
-import * as youtube from "engines/youtube";
+import * as smart from "engines/smart";
 import * as ytmusic from "engines/ytmusic";
+import * as youtube from "engines/youtube";
 import * as spotify from "engines/spotify";
 
-const blankResult: SearchResult = {
+export const blankResult: SearchResult = {
     artist: "", duration: 0, icon: "", title: "", url: "", id: ""
 };
 export const noResults: SearchResults = {
@@ -41,13 +42,8 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
         case "SoundCloud":
             // TODO: Perform SoundCloud search.
             break;
-        case "all":
-            const spotifyResults = await spotify.search(query);
-            const youtubeResults = await youtube.search(query);
-            result = {
-                top: spotifyResults.top,
-                results: spotifyResults.results.concat(youtubeResults.results)
-            };
+        case "All":
+            result = await smart.search(query);
             break;
     }
 

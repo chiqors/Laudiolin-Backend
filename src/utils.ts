@@ -108,3 +108,33 @@ export function modelFrom(object: object, model: object): object {
 
     return result; // Return the new object.
 }
+
+/**
+ * Shuffles an array.
+ * @param array The array to shuffle.
+ */
+export function shuffle<T>(array: T[]): T[] {
+    let currentIndex = array.length,  randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
+}
+
+/**
+ * Convert a Blob to a Buffer.
+ * @param blob The Blob to convert.
+ */
+export async function toBuffer(blob: Blob): Promise<Buffer> {
+    return Buffer.from(await blob.arrayBuffer());
+}

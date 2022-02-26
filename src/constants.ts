@@ -21,6 +21,8 @@ const SSL_CERT = $("SSL_CERT", <string> `/etc/letsencrypt/live/${process.env["DO
 export default {
     /* The port to listen on. */
     PORT: $("PORT", 3000),
+    /* The target HTTP route. */
+    TARGET: process.env["TARGET"] || "http://localhost:3000",
     /* The path to store files in. */
     STORAGE_PATH: $("STORAGE_PATH", `${process.cwd()}/files`),
     /* The MongoDB connection URI to use. */
