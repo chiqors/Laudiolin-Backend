@@ -55,6 +55,30 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
     }
 }
 
+/**
+ * Fetches a track by URL.
+ * @param req The HTTP request.
+ * @param rsp The new response.
+ */
+async function fetchTrack(req: Request, rsp: Response): Promise<void> {
+    // Pull arguments.
+    const url: string = req.params.url;
+
+    // Check if the arguments are valid.
+    if(url == null) {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS()); return;
+    }
+
+    // Fetch the track.
+    const result = await smart.fetchTrack(url);
+    if(result == null) {
+        rsp.status(404).send(constants.NO_RESULTS());
+    }
+
+    // Send the result.
+    rsp.status(301).send(result);
+}
+
 /* -------------------------------------------------- */
 
 /* Create a router. */
@@ -62,6 +86,7 @@ const app: Router = Router();
 
 /* Configure routes. */
 app.get("/search/:query", searchFor);
+app.get("/fetch/:url", fetchTrack);
 
 /* Export the router. */
 export default app;

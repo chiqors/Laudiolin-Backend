@@ -2,7 +2,7 @@ import {logger} from "app/index";
 import {shuffle} from "app/utils";
 import constants from "app/constants";
 
-import type {SearchResult, SearchResults} from "app/types";
+import type {SearchResult, SearchResults, Track} from "app/types";
 import {blankResult} from "features/search";
 
 import {Innertube} from "youtubei.js";
@@ -11,6 +11,7 @@ import Music from "youtubei.js/dist/src/core/Music";
 import Search from 'youtubei.js/dist/src/parser/ytmusic/Search';
 import Video from "youtubei.js/dist/src/parser/classes/Video";
 import MusicResponsiveListItem from "youtubei.js/dist/src/parser/classes/MusicResponsiveListItem";
+import VideoInfo from "youtubei.js/dist/src/parser/youtube/VideoInfo";
 
 /*
  * Authorization methods.
@@ -57,6 +58,26 @@ export async function search(query: string): Promise<SearchResults> {
         top: results[0] ?? blankResult,
         results: results.length > 0 ? shuffle(results) : [blankResult]
     };
+}
+
+/**
+ * Fetches a track's data from the URL.
+ * @param url The URL to fetch from.
+ */
+export async function fetchTrack(url: string): Promise<Track|null> {
+    // Check the URL type.
+    if (!url.includes("youtu")) {
+        return null;
+    }
+
+    // Get the video ID.
+    const id = url.includes("youtu.be") ?
+        url.split("/")[3] :
+        url.split("v=")[1];
+    // Get the video data.
+    const video = await youtube.getInfo(id);
+    // Parse the video into a track.
+    return parseVideoInfo(video);
 }
 
 /**
@@ -181,5 +202,22 @@ function parseVideo(video: Video): SearchResult {
         url: `https://youtu.be/${video.id}`,
         duration: video.duration.seconds,
         id: video.id
+    };
+}
+
+/**
+ * Parses a video's info into a track.
+ * @param video The video to parse.
+ */
+function parseVideoInfo(video: VideoInfo): Track {
+    const info = video.basic_info;
+
+    return {
+        title: info.title,
+        artist: info.author,
+        icon: info.thumbnail[0].url,
+        url: `https://youtu.be/${info.id}`,
+        duration: info.duration,
+        id: info.id
     };
 }
