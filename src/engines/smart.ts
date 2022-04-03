@@ -1,14 +1,14 @@
-import {logger} from "app/index";
-import {shuffle} from "app/utils";
+import { logger } from "app/index";
+import { shuffle } from "app/utils";
 import constants from "app/constants";
 
-import type {SearchResult, SearchResults, Track} from "app/types";
-import {blankResult} from "features/search";
+import type { SearchResult, SearchResults, Track } from "app/types";
+import { blankResult } from "features/search";
 
-import {Innertube} from "youtubei.js";
-import {ObservedArray} from "youtubei.js/dist/src/parser/helpers";
+import { Innertube } from "youtubei.js";
+import { ObservedArray } from "youtubei.js/dist/src/parser/helpers";
 import Music from "youtubei.js/dist/src/core/Music";
-import Search from 'youtubei.js/dist/src/parser/ytmusic/Search';
+import Search from "youtubei.js/dist/src/parser/ytmusic/Search";
 import Video from "youtubei.js/dist/src/parser/classes/Video";
 import MusicResponsiveListItem from "youtubei.js/dist/src/parser/classes/MusicResponsiveListItem";
 import VideoInfo from "youtubei.js/dist/src/parser/youtube/VideoInfo";
@@ -34,7 +34,7 @@ let ytmusic: Music | null = null;
 
 configure() // Configure the search APIs.
     .then(() => logger.info("Configured search engines."))
-    .catch(error => logger.error("Failed to configure search engines.", error));
+    .catch((error) => logger.error("Failed to configure search engines.", error));
 
 /*
  * Smart searching:
@@ -64,7 +64,7 @@ export async function search(query: string): Promise<SearchResults> {
  * Fetches a track's data from the URL.
  * @param url The URL to fetch from.
  */
-export async function fetchTrack(id: string, engine?: string): Promise<Track|null> {
+export async function fetchTrack(id: string, engine?: string): Promise<Track | null> {
     // Check the URL type.
     if (!engine) {
         engine = "YouTube"; // Then fetch with engine.
@@ -88,7 +88,8 @@ async function parseTracks(search: Search): Promise<SearchResult[]> {
     const songs: any = search.songs;
 
     // Parse each search result into a collection of tracks.
-    let albumTracks = [], songTracks = [];
+    let albumTracks = [],
+        songTracks = [];
     if (albums.contents) albumTracks = await parseShelf(albums.contents);
     if (songs.contents) songTracks = await parseShelf(songs.contents);
 
@@ -112,7 +113,7 @@ async function parseAlbum(album: MusicResponsiveListItem): Promise<SearchResult[
     const icon = album.thumbnails[0].url;
     const artist = album.author ? album.author.name : "Unknown";
 
-    return tracks.map(track => parseItem(track, icon, artist));
+    return tracks.map((track) => parseItem(track, icon, artist));
 }
 
 /**
@@ -123,12 +124,11 @@ async function parseShelf(shelf: ObservedArray<MusicResponsiveListItem>): Promis
     if (!shelf) return [];
 
     const results: SearchResult[] = [];
-    for(const track of shelf) {
+    for (const track of shelf) {
         if (!(track instanceof MusicResponsiveListItem)) return;
 
         // Check the item type.
-        if(track.item_type == "album")
-            results.push(...(await parseAlbum(track)));
+        if (track.item_type == "album") results.push(...(await parseAlbum(track)));
         else results.push(parseItem(track));
     }
 
@@ -150,9 +150,9 @@ function parseItem(
 
     // Check the artists type.
     if (item.artists) {
-        for(let i = 0; i < item.artists.length; i++) {
+        for (let i = 0; i < item.artists.length; i++) {
             artists += item.artists[i].name;
-            if(i < item.artists.length - 1) artists += ", ";
+            if (i < item.artists.length - 1) artists += ", ";
         }
     } else if (item.author) {
         artists = item.author.name;
@@ -166,7 +166,8 @@ function parseItem(
 
     return {
         title: item.title,
-        artist: artists, icon,
+        artist: artists,
+        icon,
         url: "https://youtu.be/" + item.id,
         id: item.id,
         duration: item.duration.seconds
@@ -179,22 +180,25 @@ function parseItem(
  */
 function parseVideos(search: any): SearchResult[] {
     const results = search.results; // Pull search results.
-    const videos = results.filter(  // Filter out non-video results.
-        result => result.type === "Video");
+    const videos = results.filter(
+        // Filter out non-video results.
+        (result) => result.type === "Video"
+    );
 
     // Parse each video.
     const filteredVideos = [];
     for (const video of videos) {
         let result = parseVideo(video);
         if (result) filteredVideos.push(result);
-    } return filteredVideos;
+    }
+    return filteredVideos;
 }
 
 /**
  * Parses a video into a search result.
  * @param video The video to parse.
  */
-function parseVideo(video: Video): SearchResult|null {
+function parseVideo(video: Video): SearchResult | null {
     if (!video.duration.seconds) return null;
 
     return {
@@ -211,7 +215,7 @@ function parseVideo(video: Video): SearchResult|null {
  * Parses a video's info into a track.
  * @param video The video to parse.
  */
-function parseVideoInfo(video: VideoInfo): Track|null {
+function parseVideoInfo(video: VideoInfo): Track | null {
     const info = video.basic_info;
 
     if (!info.duration) return null;

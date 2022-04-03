@@ -4,16 +4,17 @@ import "dotenv/config";
 import constants from "./constants";
 
 /* Create a logger instance. */
-import {Logger, TLogLevelName} from "tslog";
+import { Logger, TLogLevelName } from "tslog";
 export const logger: Logger = new Logger({
-    name: "Laudiolin", displayFunctionName: false,
-    minLevel: <TLogLevelName> (constants.LOG_LEVEL || "info"),
-    dateTimePattern: "hour:minute:second", dateTimeTimezone: "America/New_York",
+    name: "Laudiolin",
+    displayFunctionName: false,
+    minLevel: <TLogLevelName>(constants.LOG_LEVEL || "info"),
+    dateTimePattern: "hour:minute:second",
+    dateTimeTimezone: "America/New_York",
     displayFilePath: constants.LOGGER_DEBUG ? "hideNodeModulesOnly" : "hidden"
 });
 
-process.on("uncaughtException", error =>
-    logger.error("An error occurred in the application.", error));
+process.on("uncaughtException", (error) => logger.error("An error occurred in the application.", error));
 
 /* Configure async apps. */
 import "./engines/smart";
@@ -31,9 +32,9 @@ expressWs(app); // Bind the WebSocket server to the HTTP server.
 
 /* Configure middleware. */
 import * as bodyParser from "body-parser";
-app.use(bodyParser.json({limit: "250mb"}));
+app.use(bodyParser.json({ limit: "250mb" }));
 import cors from "cors";
-app.use(cors({origin: "*"}));
+app.use(cors({ origin: "*" }));
 
 /* Configure web features. */
 app.use(require("./features/user").default);

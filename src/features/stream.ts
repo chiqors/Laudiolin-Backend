@@ -1,6 +1,6 @@
 /* Imports. */
 import constants from "app/constants";
-import {Request, Response, Router} from "express";
+import { Request, Response, Router } from "express";
 import * as youtube from "engines/youtube";
 import * as spotify from "engines/spotify";
 
@@ -11,17 +11,18 @@ import * as spotify from "engines/spotify";
  */
 async function download(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
-    const id: string = (<string> req.query.id) || "";
-    const source: string = (<string> req.query.source) || "YouTube";
+    const id: string = <string>req.query.id || "";
+    const source: string = <string>req.query.source || "YouTube";
 
     // Validate arguments.
-    if(id == "") {
-        rsp.status(400).send(constants.INVALID_ARGUMENTS()); return;
+    if (id == "") {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
     }
 
     // Download the video.
     let path: string = "";
-    switch(source) {
+    switch (source) {
         case "YouTube":
             path = await youtube.download(id);
             break;
@@ -31,8 +32,9 @@ async function download(req: Request, rsp: Response): Promise<void> {
     }
 
     // Check if the path is empty.
-    if(path == "") {
-        rsp.status(404).send(constants.INVALID_ARGUMENTS()); return;
+    if (path == "") {
+        rsp.status(404).send(constants.INVALID_ARGUMENTS());
+        return;
     }
 
     // Serve the file.
@@ -46,23 +48,24 @@ async function download(req: Request, rsp: Response): Promise<void> {
  */
 async function stream(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
-    const id: string = (<string> req.query.id) || "";
-    const source: string = (<string> req.query.source) || "YouTube";
+    const id: string = <string>req.query.id || "";
+    const source: string = <string>req.query.source || "YouTube";
 
     // Validate arguments.
-    if(id == "") {
-        rsp.status(400).send(constants.INVALID_ARGUMENTS()); return;
+    if (id == "") {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
     }
 
     // Set the response headers.
     rsp.set({
-        "Connection": "keep-alive",
+        Connection: "keep-alive",
         "Content-Type": "audio/mpeg",
         "Transfer-Encoding": "chunked"
     });
 
     // Download the video.
-    switch(source) {
+    switch (source) {
         case "YouTube":
             await youtube.stream(id, rsp);
             break;

@@ -2,33 +2,35 @@
 // Other functionality is split into separate files.
 
 // Imports.
-import {logger} from "app/index";
+import { logger } from "app/index";
 import constants from "app/constants";
 
-import {Mongoose, Schema, Model, connect} from "mongoose";
-import {Playlist, User} from "app/types";
+import { Mongoose, Schema, Model, connect } from "mongoose";
+import { Playlist, User } from "app/types";
 
-import {randomString} from "app/utils";
+import { randomString } from "app/utils";
 
-let database: Mongoose|null = null;
+let database: Mongoose | null = null;
 
 /* Connect to the database. */
-connect(constants.MONGODB_URI, constants.MONGODB_CONFIG).then(db => {
-    database = db; // Save the database.
-    logger.info("Connected to the database.");
+connect(constants.MONGODB_URI, constants.MONGODB_CONFIG)
+    .then((db) => {
+        database = db; // Save the database.
+        logger.info("Connected to the database.");
 
-    // Set constants.
-    PlaylistModel = database.model("Playlist", PlaylistSchema);
-    UserModel = database.model("User", UserSchema);
+        // Set constants.
+        PlaylistModel = database.model("Playlist", PlaylistSchema);
+        UserModel = database.model("User", UserSchema);
 
-    // Create collections.
-    PlaylistModel.createCollection().then(() => {
-        logger.debug("Created the playlist collection.");
-    });
-    UserModel.createCollection().then(() => {
-        logger.debug("Created the user collection.");
-    });
-}).catch(console.error);
+        // Create collections.
+        PlaylistModel.createCollection().then(() => {
+            logger.debug("Created the playlist collection.");
+        });
+        UserModel.createCollection().then(() => {
+            logger.debug("Created the user collection.");
+        });
+    })
+    .catch(console.error);
 
 export const PlaylistSchema = new Schema({
     owner: String,
@@ -91,7 +93,7 @@ export async function updatePlaylist(playlist: Playlist): Promise<void> {
  * @param id The ID of the playlist to delete.
  */
 export async function deletePlaylist(id: string): Promise<void> {
-    await PlaylistModel.deleteOne({id});
+    await PlaylistModel.deleteOne({ id });
 }
 
 /**
@@ -106,7 +108,7 @@ export async function saveUser(user: User): Promise<void> {
  * Retrieves the user from the database.
  * @param userId The ID of the user to retrieve.
  */
-export async function getUser(userId: string): Promise<User|null> {
+export async function getUser(userId: string): Promise<User | null> {
     const result = UserModel.findOne({ userId });
     const user = await result.exec();
     return user ? user.toObject() : null;
@@ -125,7 +127,7 @@ export async function updateUser(user: User): Promise<void> {
  * @param userId The ID of the user to delete.
  */
 export async function deleteUser(userId: string): Promise<void> {
-    await UserModel.deleteOne({userId});
+    await UserModel.deleteOne({ userId });
 }
 
 /*
@@ -137,7 +139,7 @@ export async function deleteUser(userId: string): Promise<void> {
  * @param token The user's access token.
  * @return The user, or null if not found.
  */
-export async function getUserByToken(token: string): Promise<User|null> {
+export async function getUserByToken(token: string): Promise<User | null> {
     const result = UserModel.findOne({ accessToken: token });
     const user = await result.exec();
     return user ? user.toObject() : null;
@@ -150,7 +152,8 @@ export async function getUserByToken(token: string): Promise<User|null> {
  * @return The generated token.
  */
 export async function generateUserToken(userId: string | null = null): Promise<string> {
-    let found = false, token = "";
+    let found = false,
+        token = "";
     while (!found) {
         // Generate a random token.
         token = randomString(32);
@@ -160,8 +163,7 @@ export async function generateUserToken(userId: string | null = null): Promise<s
     }
 
     // Save the token.
-    if (userId) await UserModel.updateOne({ userId },
-        { accessToken: token }).exec();
+    if (userId) await UserModel.updateOne({ userId }, { accessToken: token }).exec();
 
     return token;
 }
@@ -172,7 +174,8 @@ export async function generateUserToken(userId: string | null = null): Promise<s
  * @return The random string.
  */
 export async function generatePlaylistId(): Promise<string> {
-    let found = false, id = "";
+    let found = false,
+        id = "";
     while (!found) {
         // Generate a random string.
         id = randomString(24);

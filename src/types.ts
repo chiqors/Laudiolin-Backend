@@ -79,7 +79,7 @@ export type LatencyMessage = BaseGatewayMessage & {
 // From client.
 export type NowPlayingMessage = BaseGatewayMessage & {
     type: "playing";
-    track: Track|null;
+    track: Track | null;
     seek: number;
 };
 
@@ -103,7 +103,7 @@ export type ListeningMessage = BaseGatewayMessage & {
 // To client.
 export type SyncMessage = BaseGatewayMessage & {
     type: "sync";
-    track: Track|null;
+    track: Track | null;
     progress: number;
 };
 

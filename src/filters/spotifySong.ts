@@ -1,5 +1,5 @@
 /* Imports. */
-import {SearchResult, SearchResults} from "app/types";
+import { SearchResult, SearchResults } from "app/types";
 import * as youtube from "engines/youtube";
 
 /**
@@ -9,14 +9,14 @@ import * as youtube from "engines/youtube";
  * @param data The data to filter.
  * @return The filtered data.
  */
-export default async function(data: SearchResults): Promise<SearchResults|undefined> {
+export default async function (data: SearchResults): Promise<SearchResults | undefined> {
     let filtered: SearchResult[] = [];
-    for(const result of data.results) {
+    for (const result of data.results) {
         const after = await filter(result);
-        if(after) filtered.push(after);
+        if (after) filtered.push(after);
     }
 
-    if(filtered.length == 0) {
+    if (filtered.length == 0) {
         return undefined;
     }
 
@@ -30,21 +30,23 @@ export default async function(data: SearchResults): Promise<SearchResults|undefi
  * Filters the specified data.
  * @param data The data to filter.
  */
-async function filter(data: SearchResult): Promise<SearchResult|undefined> {
-    const id = data.id; if(!id) return undefined;
+async function filter(data: SearchResult): Promise<SearchResult | undefined> {
+    const id = data.id;
+    if (!id) return undefined;
 
     // Perform a YouTube search for the song.
     const results = (await youtube.search(id)).results;
     // Check if a song matches the result.
-    const result = results.find(result => {
-        return result.title == data.title && (
-            result.artist.includes(data.artist) ||
-                result.artist.includes("Various Artists")
-        ) && result.artist.includes("Topic");
+    const result = results.find((result) => {
+        return (
+            result.title == data.title &&
+            (result.artist.includes(data.artist) || result.artist.includes("Various Artists")) &&
+            result.artist.includes("Topic")
+        );
     });
 
     // Return the result if it exists.
-    if(result) return result;
+    if (result) return result;
 
     // Attempt to perform a YouTube lookup.
     const searchQuery = `${data.title} ${data.artist} - Topic`;

@@ -1,4 +1,4 @@
-import {Request} from "express";
+import { Request } from "express";
 
 /**
  * Checks if the given value is valid JSON.
@@ -10,7 +10,8 @@ export function isJson(data: any): boolean {
 
     try {
         // Try to parse the body data.
-        JSON.parse(data); return true;
+        JSON.parse(data);
+        return true;
     } catch {
         return false;
     }
@@ -22,7 +23,8 @@ export function isJson(data: any): boolean {
  */
 export function isUrl(url: string): boolean {
     try {
-        new URL(url); return true;
+        new URL(url);
+        return true;
     } catch {
         return false;
     }
@@ -34,7 +36,7 @@ export function isUrl(url: string): boolean {
  * @return The authorization token, or null if none is found.
  */
 export function getToken(req: Request): string | null {
-    return (<string> req.headers.authorization) ?? undefined;
+    return <string>req.headers.authorization ?? undefined;
 }
 
 /**
@@ -61,9 +63,8 @@ export function defaultObject<Type>(object: object, overrides: Type): Type {
     object = Object.assign({}, object);
 
     // Assign the overrides.
-    for (const key in overrides)
-        Object.assign(object, {[key]: overrides[key]});
-    return <Type> object; // Return the new object.
+    for (const key in overrides) Object.assign(object, { [key]: overrides[key] });
+    return <Type>object; // Return the new object.
 }
 
 /**
@@ -94,17 +95,13 @@ export function modelFrom(object: object, model: object): object {
         // Check the type of the value.
         if (typeof object[key] == typeof result[key])
             // Assign the value.
-            Object.assign(result, {[key]: object[key]});
+            Object.assign(result, { [key]: object[key] });
     }
 
     // Check the model does not have missing keys.
-    for (const key in model)
-        if (result[key] == undefined)
-            throw new Error(`Missing key: ${key}`);
+    for (const key in model) if (result[key] == undefined) throw new Error(`Missing key: ${key}`);
     // Check the model does not have extra keys.
-    for (const key in result)
-        if (model[key] == undefined)
-            throw new Error(`Extra key: ${key}`);
+    for (const key in result) if (model[key] == undefined) throw new Error(`Extra key: ${key}`);
 
     return result; // Return the new object.
 }
@@ -114,18 +111,17 @@ export function modelFrom(object: object, model: object): object {
  * @param array The array to shuffle.
  */
 export function shuffle<T>(array: T[]): T[] {
-    let currentIndex = array.length,  randomIndex;
+    let currentIndex = array.length,
+        randomIndex;
 
     // While there remain elements to shuffle.
     while (currentIndex != 0) {
-
         // Pick a remaining element.
         randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex--;
 
         // And swap it with the current element.
-        [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex], array[currentIndex]];
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
     }
 
     return array;
