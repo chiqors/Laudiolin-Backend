@@ -9,12 +9,13 @@ import { WebSocket } from "ws";
 import { IncomingMessage } from "http";
 import { GatewayMessage, Track } from "app/types";
 import * as types from "app/types";
+import * as database from "features/database";
 
 import { isJson } from "app/utils";
 import { randomUUID } from "crypto";
-import { readFileSync } from "fs";
 
 const clients: { [key: string]: Client } = {};
+const users: { [key: string]: Client } = {};
 
 /**
  * Handles a new websocket connection.
@@ -24,8 +25,8 @@ const clients: { [key: string]: Client } = {};
  */
 function handleConnection(ws: WebSocket, incMsg: IncomingMessage): void {
     // Create an ID for the socket & create a client.
-    (<any>ws).id = randomUUID().toString();
-    const client = (clients[(<any>ws).id] = new Client(ws));
+    ws["id"] = randomUUID().toString();
+    const client = (clients[ws["id"]] = new Client(ws));
 
     // Add event handlers.
     ws.on("message", client.handleMessage.bind(client));
@@ -50,6 +51,7 @@ export default function (socket: WebSocket, incMsg: IncomingMessage): void {
 
 export class Client {
     private hasInitialized: boolean = false;
+    private user: types.User = null;
     lastPing: number = Date.now();
 
     /* Player information. */
@@ -80,10 +82,17 @@ export class Client {
     }
 
     /**
+     * Returns the associated user.
+     */
+    getUser(): types.User {
+        return this.user;
+    }
+
+    /**
      * Returns the client's ID.
      */
     getId(): string {
-        return (<any>this.socket).id;
+        return this.socket["id"];
     }
 
     /**
@@ -120,7 +129,7 @@ export class Client {
         const listeningWith = this.listeningWith;
 
         // Send a sync message.
-        this.send(<types.SyncMessage>{
+        this.send(<types.SyncMessage> {
             track: listeningWith.listeningTo,
             progress: listeningWith.progress
         });
@@ -176,6 +185,30 @@ export class Client {
         this.hasInitialized = true;
         // Ping the client.
         this.ping();
+
+        setTimeout(async () => {
+            // Attempt to find the user.
+            const token = (data as types.InitializeMessage).token;
+            const user = await database.getUserByToken(token);
+            // Check if the user was found.
+            if (!user) {
+                // Send an error message.
+                this.send(constants.INVALID_TOKEN());
+                // Log a message to the console.
+                logger.debug(`Client ${this.getId()} sent an invalid token.`);
+                // Disconnect the client.
+                this.disconnect();
+            } else {
+                // Set the user.
+                this.user = user;
+                // Log a message to the console.
+                logger.debug(`Client ${this.getId()} initialized as ${user.userId}.`);
+
+                // Update the users list.
+                users[user.userId] = this;
+            }
+        }, 1000);
+
         return true;
     }
 
@@ -216,6 +249,7 @@ export class Client {
         // Handle the message.
         const handler = handlers[json.type];
         if (handler) {
+            // noinspection TypeScriptValidateJSTypes
             handler.default(this, json);
         } else {
             // Send an error message.
@@ -234,5 +268,8 @@ export class Client {
     handleClose(): void {
         // Log a message to the console.
         logger.debug("Client disconnected.");
+        // Remove the client from the collections.
+        delete clients[this.getId()];
+        delete users[this.user.userId];
     }
 }

@@ -122,6 +122,9 @@ export default {
     GATEWAY_UNKNOWN_MESSAGE: () => {
         return { type: "", code: 3, message: "Invalid message received.", timestamp: Date.now() };
     },
+    GATEWAY_INVALID_TOKEN: () => {
+        return { type: "", code: 4, message: "Invalid token received.", timestamp: Date.now() };
+    },
 
     /* Successful. */
     SUCCESS: () => {
