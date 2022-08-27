@@ -1,0 +1,22 @@
+/* Imports. */
+import {logger} from "../index.js";
+import {Request, Response, Router} from "express";
+
+/**
+ *
+ * @param req The HTTP request.
+ * @param rsp The new response.
+ */
+async function handle(req: Request, rsp: Response): Promise<void> {
+
+}
+
+/* -------------------------------------------------- */
+
+/* Create a router. */
+const app: Router = Router();
+
+/* Configure routes. */
+
+/* Export the router. */
+export default app;
