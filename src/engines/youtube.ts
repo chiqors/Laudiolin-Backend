@@ -18,8 +18,9 @@ Innertube.create().then(instance => {
  */
 export async function search(query: string): Promise<SearchResults> {
     const search = await youtube.search(query);
-    const results = search.videos.map((video: Video) => {
-        return parseVideo(video);
+    const results = search.videos.map(video => {
+        if(video instanceof Video)
+            return parseVideo(video);
     });
 
     return {top: results[0], results};
