@@ -12,6 +12,11 @@ const spotify = new SpotifyWebApi({
     redirectUri: constants.SPOTIFY_REDIRECT_URI
 }); authorize(); // Authorize the Spotify API.
 
+// Set refresh task.
+setInterval(() => {
+    authorize();
+}, 1000 * 60 * 60);
+
 // Cached, filtered search results.
 const cache: {[key: string]: SearchResults} = {};
 

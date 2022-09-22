@@ -36,6 +36,7 @@ export function parseVideo(video: Video): SearchResult {
         artist: video.author.name,
         icon: video.thumbnails[0].url,
         url: "https://youtu.be/" + video.id,
+        id: video.id,
         duration: video.duration.seconds * 1000
     };
 }

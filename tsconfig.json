@@ -14,7 +14,8 @@
       "app/*": ["*"],
       "engines/*": ["engines/*"],
       "features/*": ["features/*"],
-      "filters/*": ["filters/*"]
+      "filters/*": ["filters/*"],
+      "messages/*": ["messages/*"]
     }
   },
   "ts-node": {
