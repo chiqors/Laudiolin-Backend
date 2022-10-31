@@ -71,7 +71,7 @@ export type SearchResults = {
 // From client.
 export type InitializeMessage = BaseGatewayMessage & {
     type: "initialize";
-    token: string;
+    token?: string;
 };
 // From client.
 export type LatencyMessage = BaseGatewayMessage & {

@@ -190,15 +190,9 @@ export class Client {
             // Attempt to find the user.
             const token = (data as types.InitializeMessage).token;
             const user = await database.getUserByToken(token);
+
             // Check if the user was found.
-            if (!user) {
-                // Send an error message.
-                this.send(constants.INVALID_TOKEN());
-                // Log a message to the console.
-                logger.debug(`Client ${this.getId()} sent an invalid token.`);
-                // Disconnect the client.
-                this.disconnect();
-            } else {
+            if (user) {
                 // Set the user.
                 this.user = user;
                 // Log a message to the console.
