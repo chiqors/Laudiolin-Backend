@@ -26,6 +26,22 @@ export type Playlist = {
 };
 
 /*
+ * User/Authentication.
+ */
+
+/**
+ * @param refresh The user's refresh token.
+ * @param scope Any OAuth2 scopes.
+ * @param type The authentication token type.
+ */
+export type User = {
+    userId: string;
+    scope: string;
+    refresh: string;
+    type: string;
+};
+
+/*
  * Search.
  */
 

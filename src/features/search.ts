@@ -5,6 +5,7 @@ import {SearchEngine, SearchResult, SearchResults} from "../types.js";
 import {Request, Response, Router} from "express";
 
 import * as youtube from "engines/youtube";
+import * as ytmusic from "engines/ytmusic";
 import * as spotify from "engines/spotify";
 
 const blankResult: SearchResult = {

@@ -38,6 +38,20 @@ export default {
     /* Spotify redirect URI. */
     SPOTIFY_REDIRECT_URI: $("SPOTIFY_REDIRECT_URI", ""),
 
+    /* Discord client ID. */
+    DISCORD_CLIENT_ID: $("DISCORD_CLIENT_ID", ""),
+    /* Discord client secret. */
+    DISCORD_CLIENT_SECRET: $("DISCORD_CLIENT_SECRET", ""),
+    /* Discord redirect URI. */
+    DISCORD_REDIRECT_URI: $("DISCORD_REDIRECT_URI", ""),
+    /* Discord OAuth2 URL. */
+    DISCORD_OAUTH2_URL: $("DISCORD_OAUTH2_URL", ""),
+
+    /* Discord exchange URL. */
+    DISCORD_TOKEN_EXCHANGE: "https://discord.com/api/v10/oauth2/token",
+    /* Discord user info URL. */
+    DISCORD_USER_INFO: "https://discord.com/api/v10/users/@me",
+
     /* The logger's log level. */
     LOG_LEVEL: $("LOG_LEVEL", "info"),
     /* Should the logger run in debug? */
@@ -90,5 +104,9 @@ export default {
     /* Invalid arguments. */
     INVALID_ARGUMENTS: () => {
         return {timestamp: Date.now(), code: 400, message: "Invalid arguments were provided."};
+    },
+    /* Invalid token. */
+    INVALID_TOKEN: () => {
+        return {timestamp: Date.now(), code: 401, message: "Invalid token provided."};
     }
 };

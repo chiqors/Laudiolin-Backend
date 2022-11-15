@@ -1,14 +1,20 @@
 import {logger} from "app/index";
 import constants from "app/constants";
 import {Innertube} from "youtubei.js";
-import {SearchResults, SearchResult} from "app/types";
-import {existsSync, createWriteStream} from "node:fs";
-import Video from "youtubei.js/dist/src/parser/classes/Video";
+import {existsSync, createWriteStream, createReadStream} from "node:fs";
 import {streamToIterable} from "youtubei.js/dist/src/utils/Utils";
 
-let youtube = undefined;
+import Video from "youtubei.js/dist/src/parser/classes/Video";
+import Music from "youtubei.js/dist/src/core/Music";
+
+import {SearchResults, SearchResult} from "app/types";
+import MusicResponsiveListItem from "youtubei.js/dist/src/parser/classes/MusicResponsiveListItem";
+
+let youtube: Innertube | null = null;
+let music: Music | null = null;
 Innertube.create().then(instance => {
     youtube = instance;
+    music = instance.music;
     logger.info("Successfully authenticated with the YouTube API.");
 });
 
@@ -17,10 +23,16 @@ Innertube.create().then(instance => {
  * @param query The query to search for.
  */
 export async function search(query: string): Promise<SearchResults> {
-    const search = await youtube.search(query);
-    const results = search.videos.map(video => {
-        if(video instanceof Video)
-            return parseVideo(video);
+    const search = await music.search(query);
+    const tracks = search.songs.contents;
+
+    // console.log(search.songs.contents);
+    // console.log(search.videos.contents);
+    // console.log(search.albums.contents);
+
+    const results = tracks.map(track => {
+        if(track instanceof MusicResponsiveListItem)
+            return parseVideo(track);
     }).slice(0, 8);
 
     return {top: results[0], results};
@@ -30,10 +42,16 @@ export async function search(query: string): Promise<SearchResults> {
  * Parses a video into a search result.
  * @param video The YouTube video to parse.
  */
-export function parseVideo(video: Video): SearchResult {
+export function parseVideo(video: MusicResponsiveListItem): SearchResult {
+    let mergedArtists = "";
+    for(let i = 0; i < video.artists.length; i++) {
+        mergedArtists += video.artists[i].name;
+        if(i < video.artists.length - 1) mergedArtists += ", ";
+    }
+
     return {
-        title: video.title.text,
-        artist: video.author.name,
+        title: video.title,
+        artist: mergedArtists,
         icon: video.thumbnails[0].url,
         url: "https://youtu.be/" + video.id,
         id: video.id,
@@ -77,4 +95,35 @@ export async function download(url: string): Promise<string> {
 
     // Return the path to the file.
     return filePath;
+}
+
+/**
+ * Streams the specified video.
+ * Pipes the data to the response.
+ * @param url The URL of the video to stream.
+ * @param pipe The response to pipe the data to.
+ */
+export async function stream(url: string, pipe: any): Promise<void> {
+    const id: string = url.includes("http") ? extractId(url) : url;
+
+    // Check if the video exists on the file system.
+    const filePath = `${constants.STORAGE_PATH}/${id}.mp3`;
+
+    // Check if the file already exists.
+    if(existsSync(filePath)) {
+        const fileStream = createReadStream(filePath);
+        for await (const chunk of fileStream)
+            pipe.write(chunk);
+
+        return;
+    }
+
+    // Create a stream for the video.
+    const stream = await youtube.download(id, {
+        type: "audio", quality: "best", format: "any"
+    });
+
+    // Pipe the data to the response.
+    for await (const chunk of streamToIterable(stream))
+        pipe.write(chunk);
 }

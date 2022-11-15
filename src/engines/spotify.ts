@@ -81,3 +81,19 @@ export async function download(isrc: string): Promise<string> {
     // Download the track.
     return await youtube.download(topResultUrl);
 }
+
+/**
+ * Streams the specified track.
+ * Uses the YouTube engine to download an associated video.
+ * Pipes the data to the response.
+ * @param isrc The ISRC of the track to download.
+ * @param pipe The pipe to stream the data to.
+ */
+export async function stream(isrc: string, pipe: any): Promise<void> {
+    // Perform a search for the track.
+    const searchResults = await youtube.search(isrc);
+    const topResultUrl = searchResults.top.url;
+
+    // Download the track.
+    return await youtube.stream(topResultUrl, pipe);
+}

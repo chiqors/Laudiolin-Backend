@@ -12,10 +12,12 @@ export const logger: Logger = new Logger({
     displayFilePath: constants.LOGGER_DEBUG ? "hideNodeModulesOnly" : "hidden"
 });
 
-process.on("uncaughtException", logger.error);
+process.on("uncaughtException", error =>
+    logger.error("An error occurred in the application.", error));
 
 /* Configure async apps. */
 import "./engines/youtube";
+import "./engines/ytmusic";
 import "./engines/spotify";
 import "./features/database";
 
@@ -31,10 +33,13 @@ const app: expressWs.Application
 /* Configure middleware. */
 import * as bodyParser from "body-parser";
 app.use(bodyParser.json({limit: "250mb"}));
+import cors from "cors";
+app.use(cors({origin: "*"}));
 
 /* Configure web features. */
 app.use(require("./features/search").default);
 app.use(require("./features/stream").default);
+app.use(require("./features/discord").default);
 app.use(require("./features/playlist").default);
 /* Configure websocket features. */
 app.ws("/", require("./features/gateway").default);

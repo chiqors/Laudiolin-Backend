@@ -6,7 +6,7 @@ import {logger} from "app/index";
 import constants from "app/constants";
 
 import {Mongoose, Schema, connect} from "mongoose";
-import {Playlist} from "app/types";
+import {Playlist, User} from "app/types";
 
 let database: Mongoose|null = null;
 
@@ -16,9 +16,17 @@ connect(constants.MONGODB_URI).then(db => {
     logger.info("Connected to the database.");
 
     // Set constants.
-    TrackModel = database.model("Track", TrackSchema);
     PlaylistModel = database.model("Playlist", PlaylistSchema);
-}).catch(logger.error);
+    UserModel = database.model("User", UserSchema);
+
+    // Create collections.
+    PlaylistModel.createCollection().then(() => {
+        logger.debug("Created the playlist collection.");
+    });
+    UserModel.createCollection().then(() => {
+        logger.debug("Created the user collection.");
+    });
+}).catch(console.error);
 
 export const TrackSchema = new Schema({
     title: String,
@@ -35,8 +43,18 @@ export const PlaylistSchema = new Schema({
     isPrivate: Boolean,
     tracks: TrackSchema
 });
-export let TrackModel = undefined;
+export const UserSchema = new Schema({
+    playlists: [], // List of playlist IDs.
+    likedSongs: [], // List of track IDs.
+
+    userId: String, // Discord user ID.
+    scope: String, // Discord OAuth2 scopes.
+    refresh: String, // Discord OAuth2 refresh token.
+    type: String // Discord OAuth2 token type.
+});
+
 export let PlaylistModel = undefined;
+export let UserModel = undefined;
 
 /*
  * Database methods.
@@ -64,4 +82,28 @@ export async function getPlaylist(id: string): Promise<Playlist|null> {
  */
 export async function deletePlaylist(id: string): Promise<void> {
     await PlaylistModel.deleteOne({id});
+}
+
+/**
+ * Saves the user to the database.
+ * @param user The user to save.
+ */
+export async function saveUser(user: User): Promise<void> {
+    await UserModel.create(user);
+}
+
+/**
+ * Retrieves the user from the database.
+ * @param userId The ID of the user to retrieve.
+ */
+export async function getUser(userId: string): Promise<User|null> {
+    return UserModel.findOne({userId});
+}
+
+/**
+ * Deletes the user from the database.
+ * @param userId The ID of the user to delete.
+ */
+export async function deleteUser(userId: string): Promise<void> {
+    await UserModel.deleteOne({userId});
 }
