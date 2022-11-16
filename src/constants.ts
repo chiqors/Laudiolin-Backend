@@ -1,5 +1,5 @@
 import {logger} from "./index";
-import {User} from "app/types";
+import {Track, User} from "app/types";
 
 import * as http from "node:http";
 import * as https from "node:https";
@@ -72,6 +72,16 @@ export default {
         type: ""
     },
 
+    /* A playlist track model. */
+    TRACK_MODEL: <Track> {
+        title: "",
+        artist: "",
+        icon: "",
+        url: "",
+        id: "",
+        duration: 0
+    },
+
     /* HTTP server bind callback. */
     BIND: () => {
         logger.info(`HTTP server listening on port ${$("PORT", 3000)}.`);
@@ -109,6 +119,10 @@ export default {
         return {type: "", code: 3, message: "Invalid message received.", timestamp: Date.now()};
     },
 
+    /* Successful. */
+    SUCCESS: () => {
+        return {timestamp: Date.now(), code: 200, message: "Success."};
+    },
     /* No search results. */
     NO_RESULTS: () => {
         return {timestamp: Date.now(), results: [], code: 404, message: "No results were found."};

@@ -9,7 +9,7 @@ import * as ytmusic from "engines/ytmusic";
 import * as spotify from "engines/spotify";
 
 const blankResult: SearchResult = {
-    artist: "", duration: 0, icon: "", title: "", url: ""
+    artist: "", duration: 0, icon: "", title: "", url: "", id: ""
 };
 export const noResults: SearchResults = {
     top: blankResult,
