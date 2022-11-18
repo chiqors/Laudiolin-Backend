@@ -1,4 +1,5 @@
 import {logger} from "./index";
+import {User} from "app/types";
 
 import * as http from "node:http";
 import * as https from "node:https";
@@ -60,6 +61,17 @@ export default {
     /* MongoDB connection configuration. */
     MONGODB_CONFIG: {dbName: "arikatsu", autoCreate: true},
 
+    /* The default user object. */
+    DEFAULT_USER: <User> {
+        playlists: [],
+        likedSongs: [],
+        accessToken: "",
+        userId: "",
+        scope: "",
+        refresh: "",
+        type: ""
+    },
+
     /* HTTP server bind callback. */
     BIND: () => {
         logger.info(`HTTP server listening on port ${$("PORT", 3000)}.`);
@@ -108,5 +120,9 @@ export default {
     /* Invalid token. */
     INVALID_TOKEN: () => {
         return {timestamp: Date.now(), code: 401, message: "Invalid token provided."};
+    },
+    /* No authorization. */
+    NO_AUTHORIZATION: () => {
+        return {timestamp: Date.now(), code: 403, message: "No authorization provided."};
     }
 };

@@ -11,7 +11,7 @@ import * as spotify from "engines/spotify";
 const blankResult: SearchResult = {
     artist: "", duration: 0, icon: "", title: "", url: ""
 };
-const noResults: SearchResults = {
+export const noResults: SearchResults = {
     top: blankResult,
     results: [blankResult]
 };

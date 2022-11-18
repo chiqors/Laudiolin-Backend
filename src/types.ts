@@ -17,6 +17,7 @@ export type Track = {
  * @param icon The URL to the icon of the playlist.
  */
 export type Playlist = {
+    owner: string;
     id: string;
     name: string;
     description: string;
@@ -30,15 +31,21 @@ export type Playlist = {
  */
 
 /**
+ * @param accessToken The user's client access token.
  * @param refresh The user's refresh token.
  * @param scope Any OAuth2 scopes.
  * @param type The authentication token type.
  */
 export type User = {
-    userId: string;
-    scope: string;
-    refresh: string;
-    type: string;
+    playlists?: string[];
+    likedSongs?: string[];
+
+    accessToken?: string;
+
+    userId?: string;
+    scope?: string;
+    refresh?: string;
+    type?: string;
 };
 
 /*

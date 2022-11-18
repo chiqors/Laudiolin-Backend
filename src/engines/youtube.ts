@@ -1,6 +1,8 @@
 import {logger} from "app/index";
 import constants from "app/constants";
 import {Innertube} from "youtubei.js";
+import {noResults} from "features/search";
+
 import {existsSync, createWriteStream, createReadStream} from "node:fs";
 import {streamToIterable} from "youtubei.js/dist/src/utils/Utils";
 
@@ -24,6 +26,9 @@ Innertube.create().then(instance => {
  */
 export async function search(query: string): Promise<SearchResults> {
     const search = await music.search(query);
+    if (search.songs == null)
+        return noResults;
+
     const tracks = search.songs.contents;
 
     // console.log(search.songs.contents);

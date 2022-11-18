@@ -37,12 +37,19 @@ import cors from "cors";
 app.use(cors({origin: "*"}));
 
 /* Configure web features. */
+app.use(require("./features/user").default);
 app.use(require("./features/search").default);
 app.use(require("./features/stream").default);
 app.use(require("./features/discord").default);
 app.use(require("./features/playlist").default);
 /* Configure websocket features. */
 app.ws("/", require("./features/gateway").default);
+/* Configure static routing. */
+app.use(express.static(`${__dirname}/public`));
+/* Configure views. */
+app.engine("html", require("ejs").renderFile);
+app.set("view engine", "html");
+app.set("views", `${__dirname}/public`);
 
 /* Configure the HTTP server. */
 const server = constants.CREATE_SERVER(constants.PORT, app);

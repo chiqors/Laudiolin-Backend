@@ -3,6 +3,8 @@ import constants from "app/constants";
 import {Request, Response, Router} from "express";
 
 import * as database from "features/database";
+import {defaultObject} from "app/utils";
+import {User} from "app/types";
 
 /**
  * Redirects the user to the configured OAuth2 URL.
@@ -66,17 +68,33 @@ async function handle(req: Request, rsp: Response): Promise<void> {
 
     // Pull data from the user response.
     const {id} = userData;
+    // Generate a new token.
+    const token = await database.generateUserToken();
 
     // Save the data to the database.
-    await database.saveUser({
-        userId: id,
-        refresh: refresh_token,
-        type: token_type, scope
+    const newUserData = defaultObject<User>(constants.DEFAULT_USER, {
+        userId: id, accessToken: token,
+        refresh: refresh_token, type: token_type, scope,
     });
 
-    // TODO: Handoff token to the client.
-    // rsp.redirect("/handoff?token=" + token);
-    rsp.redirect("/");
+    // Check if the user already exists.
+    const user = await database.getUser(id);
+    if (user == null)
+        await database.saveUser(newUserData);
+    else
+        await database.updateUser(newUserData);
+
+    // Handoff to the client.
+    rsp.redirect("/handoff?code=" + token);
+}
+
+/**
+ * Redirects the user to the handoff page.
+ * @param req The HTTP request.
+ * @param rsp The new response.
+ */
+async function handoff(req: Request, rsp: Response): Promise<void> {
+    rsp.render("authorized"); // Display the handoff page.
 }
 
 /* -------------------------------------------------- */
@@ -87,6 +105,7 @@ const app: Router = Router();
 /* Configure routes. */
 app.get("/discord", redirect);
 app.get("/discord/callback/", handle);
+app.get("/handoff", handoff);
 
 /* Export the router. */
 export default app;

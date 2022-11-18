@@ -5,8 +5,10 @@
 import {logger} from "app/index";
 import constants from "app/constants";
 
-import {Mongoose, Schema, connect} from "mongoose";
+import {Mongoose, Schema, Model, connect} from "mongoose";
 import {Playlist, User} from "app/types";
+
+import {randomString} from "app/utils";
 
 let database: Mongoose|null = null;
 
@@ -36,6 +38,7 @@ export const TrackSchema = new Schema({
     duration: Number
 });
 export const PlaylistSchema = new Schema({
+    owner: String,
     id: String,
     name: String,
     description: String,
@@ -47,14 +50,16 @@ export const UserSchema = new Schema({
     playlists: [], // List of playlist IDs.
     likedSongs: [], // List of track IDs.
 
+    accessToken: String, // The user's client access token.
+
     userId: String, // Discord user ID.
     scope: String, // Discord OAuth2 scopes.
     refresh: String, // Discord OAuth2 refresh token.
     type: String // Discord OAuth2 token type.
 });
 
-export let PlaylistModel = undefined;
-export let UserModel = undefined;
+export let PlaylistModel: Model<any> = undefined;
+export let UserModel: Model<any> = undefined;
 
 /*
  * Database methods.
@@ -73,7 +78,17 @@ export async function savePlaylist(playlist: Playlist): Promise<void> {
  * @param id The ID of the playlist to retrieve.
  */
 export async function getPlaylist(id: string): Promise<Playlist|null> {
-    return PlaylistModel.findOne({id});
+    const result = PlaylistModel.findOne({ id });
+    const playlist = await result.exec();
+    return playlist ? playlist.toObject() : null;
+}
+
+/**
+ * Updates the playlist in the database.
+ * @param playlist The playlist to update.
+ */
+export async function updatePlaylist(playlist: Playlist): Promise<void> {
+    await PlaylistModel.updateOne({ id: playlist.id }, playlist);
 }
 
 /**
@@ -97,7 +112,17 @@ export async function saveUser(user: User): Promise<void> {
  * @param userId The ID of the user to retrieve.
  */
 export async function getUser(userId: string): Promise<User|null> {
-    return UserModel.findOne({userId});
+    const result = UserModel.findOne({ userId });
+    const user = await result.exec();
+    return user ? user.toObject() : null;
+}
+
+/**
+ * Attempts to update the user's data.
+ * @param user The user data to update.
+ */
+export async function updateUser(user: User): Promise<void> {
+    await UserModel.updateOne({ userId: user.userId }, user).exec();
 }
 
 /**
@@ -106,4 +131,61 @@ export async function getUser(userId: string): Promise<User|null> {
  */
 export async function deleteUser(userId: string): Promise<void> {
     await UserModel.deleteOne({userId});
+}
+
+/*
+ * Utility methods.
+ */
+
+/**
+ * Gets a user from the database.
+ * @param token The user's access token.
+ * @return The user, or null if not found.
+ */
+export async function getUserByToken(token: string): Promise<User|null> {
+    const result = UserModel.findOne({ accessToken: token });
+    const user = await result.exec();
+    return user ? user.toObject() : null;
+}
+
+/**
+ * Generates a random 32 character string.
+ * This string cannot overlap with any other tokens.
+ * @param userId The user's ID.
+ * @param update Whether to update the user's token.
+ * @return The generated token.
+ */
+export async function generateUserToken(userId: string | null = null): Promise<string> {
+    let found = false, token = "";
+    while (!found) {
+        // Generate a random token.
+        token = randomString(32);
+        // Check if the token is already in use.
+        const user = await getUserByToken(token);
+        if (!user) found = true;
+    }
+
+    // Save the token.
+    if (userId) await UserModel.updateOne({ userId },
+        { accessToken: token }).exec();
+
+    return token;
+}
+
+/**
+ * Generates a random 24 character string.
+ * This string cannot overlap with any other IDs.
+ * @return The random string.
+ */
+export async function generatePlaylistId(): Promise<string> {
+    let found = false, id = "";
+    while (!found) {
+        // Generate a random string.
+        id = randomString(24);
+        // Check if the ID exists.
+        const playlist = await getPlaylist(id);
+        if (!playlist) found = true;
+    }
+
+    return id;
 }
