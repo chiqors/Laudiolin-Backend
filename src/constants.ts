@@ -1,5 +1,5 @@
 import {logger} from "./index";
-import {User} from "app/types";
+import {Track, User} from "app/types";
 
 import * as http from "node:http";
 import * as https from "node:https";
@@ -21,8 +21,6 @@ const SSL_CERT = $("SSL_CERT", <string> `/etc/letsencrypt/live/${process.env["DO
 export default {
     /* The port to listen on. */
     PORT: $("PORT", 3000),
-    /* The port to listen on. */
-    SOCKET_PORT: $("SOCKET_PORT", 3001),
     /* The path to store files in. */
     STORAGE_PATH: $("STORAGE_PATH", `${process.cwd()}/files`),
     /* The MongoDB connection URI to use. */
@@ -59,7 +57,7 @@ export default {
     LOGGER_DEBUG: (<string> $("LOGGER_DEBUG", "no")) == "yes",
 
     /* MongoDB connection configuration. */
-    MONGODB_CONFIG: {dbName: "arikatsu", autoCreate: true},
+    MONGODB_CONFIG: {dbName: "laudiolin", autoCreate: true},
 
     /* The default user object. */
     DEFAULT_USER: <User> {
@@ -67,9 +65,20 @@ export default {
         likedSongs: [],
         accessToken: "",
         userId: "",
+        avatar: "",
         scope: "",
         refresh: "",
         type: ""
+    },
+
+    /* A playlist track model. */
+    TRACK_MODEL: <Track> {
+        title: "",
+        artist: "",
+        icon: "",
+        url: "",
+        id: "",
+        duration: 0
     },
 
     /* HTTP server bind callback. */
@@ -109,6 +118,10 @@ export default {
         return {type: "", code: 3, message: "Invalid message received.", timestamp: Date.now()};
     },
 
+    /* Successful. */
+    SUCCESS: () => {
+        return {timestamp: Date.now(), code: 200, message: "Success."};
+    },
     /* No search results. */
     NO_RESULTS: () => {
         return {timestamp: Date.now(), results: [], code: 404, message: "No results were found."};
@@ -119,7 +132,7 @@ export default {
     },
     /* Invalid token. */
     INVALID_TOKEN: () => {
-        return {timestamp: Date.now(), code: 401, message: "Invalid token provided."};
+        return {timestamp: Date.now(), code: 400, message: "Invalid token provided."};
     },
     /* No authorization. */
     NO_AUTHORIZATION: () => {

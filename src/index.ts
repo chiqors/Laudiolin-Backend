@@ -21,14 +21,12 @@ import "./engines/ytmusic";
 import "./engines/spotify";
 import "./features/database";
 
-/* Configure the WebSocket server. */
-const webSocketServer = constants.CREATE_SERVER(constants.SOCKET_PORT);
-
 /* Create an Express app. */
 import express from "express";
 import expressWs from "express-ws";
-const app: expressWs.Application
-    = expressWs(express(), webSocketServer).app;
+
+const app: any = express(); // Create the Express app.
+expressWs(app); // Bind the WebSocket server to the HTTP server.
 
 /* Configure middleware. */
 import * as bodyParser from "body-parser";
@@ -51,9 +49,5 @@ app.engine("html", require("ejs").renderFile);
 app.set("view engine", "html");
 app.set("views", `${__dirname}/public`);
 
-/* Configure the HTTP server. */
-const server = constants.CREATE_SERVER(constants.PORT, app);
-
 // Bind to the ports.
-server.listen(constants.PORT, constants.BIND);
-webSocketServer.listen(constants.SOCKET_PORT, constants.BIND_SOCKET);
+app.listen(constants.PORT, constants.BIND);

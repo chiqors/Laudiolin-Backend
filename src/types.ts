@@ -11,6 +11,7 @@ export type Track = {
     artist: string;
     icon: string;
     url: string;
+    id: string;
     duration: number;
 };
 /**
@@ -43,6 +44,8 @@ export type User = {
     accessToken?: string;
 
     userId?: string;
+    avatar?: string;
+
     scope?: string;
     refresh?: string;
     type?: string;

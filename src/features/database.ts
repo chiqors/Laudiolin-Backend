@@ -13,7 +13,7 @@ import {randomString} from "app/utils";
 let database: Mongoose|null = null;
 
 /* Connect to the database. */
-connect(constants.MONGODB_URI, { family: 4 }).then(db => {
+connect(constants.MONGODB_URI, constants.MONGODB_CONFIG, { family: 4 }).then(db => {
     database = db; // Save the database.
     logger.info("Connected to the database.");
 
@@ -30,13 +30,6 @@ connect(constants.MONGODB_URI, { family: 4 }).then(db => {
     });
 }).catch(console.error);
 
-export const TrackSchema = new Schema({
-    title: String,
-    artist: String,
-    icon: String,
-    url: String,
-    duration: Number
-});
 export const PlaylistSchema = new Schema({
     owner: String,
     id: String,
@@ -44,15 +37,17 @@ export const PlaylistSchema = new Schema({
     description: String,
     icon: String,
     isPrivate: Boolean,
-    tracks: TrackSchema
+    tracks: Array
 });
 export const UserSchema = new Schema({
-    playlists: [], // List of playlist IDs.
-    likedSongs: [], // List of track IDs.
+    playlists: Array, // List of playlist IDs.
+    likedSongs: Array, // List of track IDs.
 
     accessToken: String, // The user's client access token.
 
     userId: String, // Discord user ID.
+    avatar: String, // Discord avatar URL.
+
     scope: String, // Discord OAuth2 scopes.
     refresh: String, // Discord OAuth2 refresh token.
     type: String // Discord OAuth2 token type.
@@ -77,7 +72,7 @@ export async function savePlaylist(playlist: Playlist): Promise<void> {
  * Retrieves the playlist from the database.
  * @param id The ID of the playlist to retrieve.
  */
-export async function getPlaylist(id: string): Promise<Playlist|null> {
+export async function getPlaylist(id: string): Promise<Playlist | null> {
     const result = PlaylistModel.findOne({ id });
     const playlist = await result.exec();
     return playlist ? playlist.toObject() : null;
@@ -152,7 +147,6 @@ export async function getUserByToken(token: string): Promise<User|null> {
  * Generates a random 32 character string.
  * This string cannot overlap with any other tokens.
  * @param userId The user's ID.
- * @param update Whether to update the user's token.
  * @return The generated token.
  */
 export async function generateUserToken(userId: string | null = null): Promise<string> {
