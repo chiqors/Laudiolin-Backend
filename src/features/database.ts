@@ -13,7 +13,7 @@ import {randomString} from "app/utils";
 let database: Mongoose|null = null;
 
 /* Connect to the database. */
-connect(constants.MONGODB_URI).then(db => {
+connect(constants.MONGODB_URI, constants.MONGODB_CONFIG).then(db => {
     database = db; // Save the database.
     logger.info("Connected to the database.");
 
@@ -70,7 +70,7 @@ export async function savePlaylist(playlist: Playlist): Promise<void> {
  * Retrieves the playlist from the database.
  * @param id The ID of the playlist to retrieve.
  */
-export async function getPlaylist(id: string): Promise<Playlist|null> {
+export async function getPlaylist(id: string): Promise<Playlist | null> {
     const result = PlaylistModel.findOne({ id });
     const playlist = await result.exec();
     return playlist ? playlist.toObject() : null;

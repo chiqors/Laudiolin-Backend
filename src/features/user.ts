@@ -40,6 +40,25 @@ async function fetch(req: Request, rsp: Response): Promise<void> {
     delete publicUser["__v"]; // These are MongoDB flags.
     delete publicUser["_id"]; // These are MongoDB flags.
 
+    // Update the playlists if needed.
+    let removePrivate = false;
+    if (token && id) {
+        // Check if the user is authorized.
+        if (user.accessToken != token)
+            removePrivate = true;
+    } else if (!token && id) {
+        removePrivate = true;
+    }
+
+    if (removePrivate) {
+        publicUser.playlists = [];
+        for (const playlist of user.playlists) {
+            // Fetch the playlist data.
+            const data = await database.getPlaylist(playlist);
+            if (!data.isPrivate) publicUser.playlists.push(playlist);
+        }
+    }
+
     // Send the user.
     rsp.status(301).send(publicUser);
 }

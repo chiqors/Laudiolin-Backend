@@ -41,6 +41,10 @@ async function createPlaylist(req: Request, rsp: Response): Promise<void> {
 
     // Save the playlist to the database.
     await database.savePlaylist(playlist);
+    // Add the playlist ID to the user.
+    user.playlists.push(playlist.id);
+    await database.saveUser(user);
+
     // Send the playlist.
     rsp.status(201).send(playlist);
 }
@@ -248,6 +252,10 @@ async function deletePlaylist(req: Request, rsp: Response): Promise<void> {
 
     // Delete the playlist from the database.
     await database.deletePlaylist(id);
+    // Remove the playlist from the user.
+    user.playlists.splice(user.playlists.indexOf(id), 1);
+    await database.updateUser(user);
+
     // Send a response.
     rsp.status(200).send(constants.SUCCESS());
 }
