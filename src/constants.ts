@@ -57,7 +57,7 @@ export default {
     LOGGER_DEBUG: (<string> $("LOGGER_DEBUG", "no")) == "yes",
 
     /* MongoDB connection configuration. */
-    MONGODB_CONFIG: {dbName: "laudiolin", autoCreate: true},
+    MONGODB_CONFIG: {dbName: "laudiolin", autoCreate: true, family: 4},
 
     /* The default user object. */
     DEFAULT_USER: <User> {
