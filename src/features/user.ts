@@ -3,7 +3,7 @@ import {logger} from "app/index";
 import constants from "app/constants";
 import {Request, Response, Router} from "express";
 
-import {getToken} from "app/utils";
+import {getToken, sanitize} from "app/utils";
 import * as database from "features/database";
 
 /**
@@ -32,13 +32,9 @@ async function fetch(req: Request, rsp: Response): Promise<void> {
     }
 
     // Remove private user information.
-    const publicUser = Object.assign({}, user);
-    delete publicUser.accessToken;
-    delete publicUser.refresh;
-    delete publicUser.scope;
-    delete publicUser.type;
-    delete publicUser["__v"]; // These are MongoDB flags.
-    delete publicUser["_id"]; // These are MongoDB flags.
+    let publicUser = Object.assign({}, user);
+    publicUser = sanitize(publicUser, [
+        "accessToken", "refresh", "scope", "type"]);
 
     // Update the playlists if needed.
     let removePrivate = false;

@@ -65,6 +65,7 @@ export default {
         likedSongs: [],
         accessToken: "",
         userId: "",
+        avatar: "",
         scope: "",
         refresh: "",
         type: ""

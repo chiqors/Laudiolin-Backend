@@ -67,13 +67,15 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     }
 
     // Pull data from the user response.
-    const {id} = userData;
+    const {id, avatar} = userData;
     // Generate a new token.
     const token = await database.generateUserToken();
+    // Get the avatar URL.
+    const avatarUrl = getAvatarUrl(id, avatar);
 
     // Save the data to the database.
     const newUserData = defaultObject<User>(constants.DEFAULT_USER, {
-        userId: id, accessToken: token,
+        userId: id, accessToken: token, avatar: avatarUrl,
         refresh: refresh_token, type: token_type, scope,
     });
 
@@ -95,6 +97,19 @@ async function handle(req: Request, rsp: Response): Promise<void> {
  */
 async function handoff(req: Request, rsp: Response): Promise<void> {
     rsp.render("authorized"); // Display the handoff page.
+}
+
+/*
+ * Utility methods.
+ */
+
+/**
+ * Gets the URL for the user's avatar.
+ * @param id The user's ID.
+ * @param hash The user's avatar hash.
+ */
+function getAvatarUrl(id: string, hash: string): string {
+    return `https://cdn.discordapp.com/avatars/${id}/${hash}.png`;
 }
 
 /* -------------------------------------------------- */

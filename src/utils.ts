@@ -71,12 +71,12 @@ export function defaultObject<Type>(object: object, overrides: Type): Type {
  * @param object The object to sanitize.
  * @param remove Other keys to remove.
  */
-export function sanitize(object: object, remove: object = {}): object {
+export function sanitize(object: object, remove: string[] = []): object {
     // Remove the MongoDB keys.
     delete object["_id"];
     delete object["__v"];
     // Remove the other keys.
-    for (const key in remove) delete object[key];
+    for (const key of remove) delete object[key];
 
     return object; // Return the sanitized object.
 }

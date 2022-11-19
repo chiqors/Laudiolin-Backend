@@ -46,6 +46,8 @@ export const UserSchema = new Schema({
     accessToken: String, // The user's client access token.
 
     userId: String, // Discord user ID.
+    avatar: String, // Discord avatar URL.
+
     scope: String, // Discord OAuth2 scopes.
     refresh: String, // Discord OAuth2 refresh token.
     type: String // Discord OAuth2 token type.

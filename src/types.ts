@@ -44,6 +44,8 @@ export type User = {
     accessToken?: string;
 
     userId?: string;
+    avatar?: string;
+
     scope?: string;
     refresh?: string;
     type?: string;
