@@ -26,7 +26,7 @@ export default {
     /* The path to store files in. */
     STORAGE_PATH: $("STORAGE_PATH", `${process.cwd()}/files`),
     /* The MongoDB connection URI to use. */
-    MONGODB_URI: $("MONGODB_URI", <string> "mongodb://localhost:27017/"),
+    MONGODB_URI: $("MONGODB_URI", <string> "mongodb://127.0.0.1:27017/"),
 
     DOMAIN, /* The app domain. */
     SSL_KEY, /* SSL key path. */

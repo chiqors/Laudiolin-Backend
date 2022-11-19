@@ -13,7 +13,7 @@ import {randomString} from "app/utils";
 let database: Mongoose|null = null;
 
 /* Connect to the database. */
-connect(constants.MONGODB_URI).then(db => {
+connect(constants.MONGODB_URI, { family: 4 }).then(db => {
     database = db; // Save the database.
     logger.info("Connected to the database.");
 
