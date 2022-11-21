@@ -62,15 +62,16 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
  */
 async function fetchTrack(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
-    const url: string = req.params.url;
+    const id: string = req.params.id
+    const engine: SearchEngine = (<SearchEngine> req.query.query) || "YouTube";
 
     // Check if the arguments are valid.
-    if(url == null) {
+    if(id == null) {
         rsp.status(400).send(constants.INVALID_ARGUMENTS()); return;
     }
 
     // Fetch the track.
-    const result = await smart.fetchTrack(url);
+    const result = await smart.fetchTrack(id, engine);
     if(result == null) {
         rsp.status(404).send(constants.NO_RESULTS());
     }
@@ -86,7 +87,7 @@ const app: Router = Router();
 
 /* Configure routes. */
 app.get("/search/:query", searchFor);
-app.get("/fetch/:url", fetchTrack);
+app.get("/fetch/:id", fetchTrack);
 
 /* Export the router. */
 export default app;

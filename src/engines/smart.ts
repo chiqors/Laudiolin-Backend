@@ -64,16 +64,12 @@ export async function search(query: string): Promise<SearchResults> {
  * Fetches a track's data from the URL.
  * @param url The URL to fetch from.
  */
-export async function fetchTrack(url: string): Promise<Track|null> {
+export async function fetchTrack(id: string, engine?: string): Promise<Track|null> {
     // Check the URL type.
-    if (!url.includes("youtu")) {
-        return null;
+    if (!engine) {
+        engine = "YouTube"; // Then fetch with engine.
     }
-
-    // Get the video ID.
-    const id = url.includes("youtu.be") ?
-        url.split("/")[3] :
-        url.split("v=")[1];
+    
     // Get the video data.
     const video = await youtube.getInfo(id);
     // Parse the video into a track.
