@@ -177,12 +177,12 @@ async function editPlaylist(req: Request, rsp: Response): Promise<void> {
         break;
     case "remove":
         // Validate the body.
-        if (typeof body != "number") {
+        if (typeof body.index != "number") {
             rsp.status(400).send(constants.INVALID_ARGUMENTS()); return;
         }
 
         // Remove the song from the playlist.
-        playlist.tracks.splice(body, 1);
+        playlist.tracks.splice(body.index, 1);
         break;
     case "bulk":
         // Validate the body.
