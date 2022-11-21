@@ -69,7 +69,7 @@ export async function fetchTrack(id: string, engine?: string): Promise<Track|nul
     if (!engine) {
         engine = "YouTube"; // Then fetch with engine.
     }
-    
+
     // Get the video data.
     const video = await youtube.getInfo(id);
     // Parse the video into a track.
@@ -183,14 +183,20 @@ function parseVideos(search: any): SearchResult[] {
         result => result.type === "Video");
 
     // Parse each video.
-    return videos.map(video => parseVideo(video as Video));
+    const filteredVideos = [];
+    for (const video of videos) {
+        let result = parseVideo(video);
+        if (result) filteredVideos.push(result);
+    } return filteredVideos;
 }
 
 /**
  * Parses a video into a search result.
  * @param video The video to parse.
  */
-function parseVideo(video: Video): SearchResult {
+function parseVideo(video: Video): SearchResult|null {
+    if (!video.duration.seconds) return null;
+
     return {
         title: video.title.text,
         artist: video.author.name,
@@ -205,8 +211,10 @@ function parseVideo(video: Video): SearchResult {
  * Parses a video's info into a track.
  * @param video The video to parse.
  */
-function parseVideoInfo(video: VideoInfo): Track {
+function parseVideoInfo(video: VideoInfo): Track|null {
     const info = video.basic_info;
+
+    if (!info.duration) return null;
 
     return {
         title: info.title,
