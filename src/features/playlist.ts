@@ -43,7 +43,7 @@ async function createPlaylist(req: Request, rsp: Response): Promise<void> {
     await database.savePlaylist(playlist);
     // Add the playlist ID to the user.
     user.playlists.push(playlist.id);
-    await database.saveUser(user);
+    await database.updateUser(user);
 
     // Send the playlist.
     rsp.status(201).send(playlist);
