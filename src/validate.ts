@@ -1,4 +1,4 @@
-import {isUrl} from "./utils";
+import { isUrl } from "./utils";
 
 /**
  * Attempts to validate the track object.
@@ -6,7 +6,8 @@ import {isUrl} from "./utils";
  */
 export function track(track: any): boolean {
     // Check basic track data.
-    const basic = track &&
+    const basic =
+        track &&
         typeof track == "object" &&
         typeof track.title == "string" &&
         typeof track.artist == "string" &&
@@ -30,8 +31,9 @@ export function track(track: any): boolean {
  * @param playlist The playlist to validate.
  */
 export function playlist(playlist: any): boolean {
-// Check basic playlist data.
-    const basic = playlist &&
+    // Check basic playlist data.
+    const basic =
+        playlist &&
         typeof playlist == "object" &&
         typeof playlist.owner == "string" &&
         typeof playlist.id == "string" &&

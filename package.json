@@ -14,7 +14,8 @@
     "watch:compile": "tsc --watch",
     "watch:start": "tsc-watch --onsuccess \"node build/index.js\"",
     "compile": "tsc",
-    "build": "ncc build src/index.ts -o js -m --target es2022"
+    "build": "ncc build src/index.ts -o js -m --target es2022",
+    "lint": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\""
   },
 
   "dependencies": {
@@ -42,6 +43,8 @@
     "tsc-watch": "^5.0.3",
     "tsconfig-paths": "^4.1.0",
     "concurrently": "^7.6.0",
+
+    "prettier": "^2.7.1",
     "@vercel/ncc": "^0.34.0"
   }
 }

@@ -1,5 +1,5 @@
-import {logger} from "app/index";
-import {SearchResult, SearchResults} from "app/types";
+import { logger } from "app/index";
+import { SearchResult, SearchResults } from "app/types";
 import constants from "app/constants";
 import filter from "filters/spotifySong";
 import SpotifyWebApi from "spotify-web-api-node";
@@ -10,7 +10,8 @@ const spotify = new SpotifyWebApi({
     clientId: constants.SPOTIFY_CLIENT_ID,
     clientSecret: constants.SPOTIFY_CLIENT_SECRET,
     redirectUri: constants.SPOTIFY_REDIRECT_URI
-}); authorize(); // Authorize the Spotify API.
+});
+authorize(); // Authorize the Spotify API.
 
 // Set refresh task.
 setInterval(() => {
@@ -18,18 +19,21 @@ setInterval(() => {
 }, 1000 * 60 * 60);
 
 // Cached, filtered search results.
-const cache: {[key: string]: SearchResults} = {};
+const cache: { [key: string]: SearchResults } = {};
 
 /**
  * Authorizes with the Spotify API.
  */
 export function authorize(): void {
-    spotify.clientCredentialsGrant().then(data => {
-        spotify.setAccessToken(data.body["access_token"]);
-        logger.info("Successfully authenticated with the Spotify API.");
-    }).catch(error => {
-        logger.error("Failed to authenticate with the Spotify API.", error);
-    });
+    spotify
+        .clientCredentialsGrant()
+        .then((data) => {
+            spotify.setAccessToken(data.body["access_token"]);
+            logger.info("Successfully authenticated with the Spotify API.");
+        })
+        .catch((error) => {
+            logger.error("Failed to authenticate with the Spotify API.", error);
+        });
 }
 
 /**
@@ -39,17 +43,19 @@ export function authorize(): void {
  */
 export async function search(query: string, smartFilter: boolean = false): Promise<SearchResults> {
     const search = await spotify.searchTracks(query);
-    const results = search.body.tracks.items.map(track => {
-        return parseTrack(track);
-    }).slice(0, 8);
+    const results = search.body.tracks.items
+        .map((track) => {
+            return parseTrack(track);
+        })
+        .slice(0, 8);
 
     // Return result data.
-    const data = {top: results[0], results};
-    if(!smartFilter) return data;
+    const data = { top: results[0], results };
+    if (!smartFilter) return data;
 
     // Return cached/filtered data.
-    if(cache[query]) return cache[query];
-    return cache[query] = await filter(data);
+    if (cache[query]) return cache[query];
+    return (cache[query] = await filter(data));
 }
 
 /**

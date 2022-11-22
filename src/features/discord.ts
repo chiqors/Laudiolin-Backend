@@ -1,10 +1,10 @@
 /* Imports. */
 import constants from "app/constants";
-import {Request, Response, Router} from "express";
+import { Request, Response, Router } from "express";
 
 import * as database from "features/database";
-import {defaultObject} from "app/utils";
-import {User} from "app/types";
+import { defaultObject } from "app/utils";
+import { User } from "app/types";
 
 /**
  * Redirects the user to the configured OAuth2 URL.
@@ -22,7 +22,7 @@ async function redirect(req: Request, rsp: Response): Promise<void> {
  */
 async function handle(req: Request, rsp: Response): Promise<void> {
     // Get URL parameters.
-    const code = <string> req.query.code;
+    const code = <string>req.query.code;
 
     // Check if the code is valid.
     if (!code) {
@@ -32,9 +32,11 @@ async function handle(req: Request, rsp: Response): Promise<void> {
 
     // Perform OAuth2 exchange.
     const response = await fetch(constants.DISCORD_TOKEN_EXCHANGE, {
-        method: "POST", headers: {
+        method: "POST",
+        headers: {
             "Content-Type": "application/x-www-form-urlencoded"
-        }, body: new URLSearchParams({
+        },
+        body: new URLSearchParams({
             client_id: constants.DISCORD_CLIENT_ID,
             client_secret: constants.DISCORD_CLIENT_SECRET,
             redirect_uri: constants.DISCORD_REDIRECT_URI,
@@ -51,10 +53,11 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     }
 
     // Pull data from the response.
-    const {access_token, refresh_token, token_type, scope} = data;
+    const { access_token, refresh_token, token_type, scope } = data;
     // Get the user information.
     const userResponse = await fetch(constants.DISCORD_USER_INFO, {
-        method: "GET", headers: {
+        method: "GET",
+        headers: {
             authorization: `${token_type} ${access_token}`
         }
     });
@@ -67,7 +70,7 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     }
 
     // Pull data from the user response.
-    const {id, avatar} = userData;
+    const { id, avatar } = userData;
     // Generate a new token.
     const token = await database.generateUserToken();
     // Get the avatar URL.
@@ -75,16 +78,18 @@ async function handle(req: Request, rsp: Response): Promise<void> {
 
     // Save the data to the database.
     const newUserData = defaultObject<User>(constants.DEFAULT_USER, {
-        userId: id, accessToken: token, avatar: avatarUrl,
-        refresh: refresh_token, type: token_type, scope,
+        userId: id,
+        accessToken: token,
+        avatar: avatarUrl,
+        refresh: refresh_token,
+        type: token_type,
+        scope
     });
 
     // Check if the user already exists.
     const user = await database.getUser(id);
-    if (user == null)
-        await database.saveUser(newUserData);
-    else
-        await database.updateUser(newUserData);
+    if (user == null) await database.saveUser(newUserData);
+    else await database.updateUser(newUserData);
 
     // Handoff to the client.
     rsp.redirect("/handoff?code=" + token);

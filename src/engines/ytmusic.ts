@@ -1,15 +1,15 @@
-import {logger} from "app/index";
-import {Innertube} from "youtubei.js";
+import { logger } from "app/index";
+import { Innertube } from "youtubei.js";
 
 import Music from "youtubei.js/dist/src/core/Music";
-import Search from 'youtubei.js/dist/src/parser/ytmusic/Search';
+import Search from "youtubei.js/dist/src/parser/ytmusic/Search";
 import MusicResponsiveListItem from "youtubei.js/dist/src/parser/classes/MusicResponsiveListItem";
 
-import type {SearchResult, SearchResults} from "app/types";
-import {ObservedArray} from "youtubei.js/dist/src/parser/helpers";
+import type { SearchResult, SearchResults } from "app/types";
+import { ObservedArray } from "youtubei.js/dist/src/parser/helpers";
 
 let music: Music | null = null;
-Innertube.create().then(instance => {
+Innertube.create().then((instance) => {
     music = instance.music;
     logger.info("Successfully authenticated with the YTMusic API.");
 });
@@ -23,7 +23,7 @@ export async function search(query: string): Promise<SearchResults> {
     const tracks = await parseTracks(search); // Parse the tracks into a collection of tracks.
 
     // Return the top track and all tracks.
-    return {top: tracks[0], results: tracks.splice(0, 10)};
+    return { top: tracks[0], results: tracks.splice(0, 10) };
 }
 
 /**
@@ -39,7 +39,9 @@ async function parseTracks(search: Search): Promise<SearchResult[]> {
     const videos = await search.getMore(search.videos);
 
     // Parse each search result into a collection of tracks.
-    let albumTracks = [], songTracks = [], videoTracks = [];
+    let albumTracks = [],
+        songTracks = [],
+        videoTracks = [];
     if (albums) albumTracks = await parseShelf(albums.results);
     if (songs) songTracks = await parseShelf(songs.results);
     if (videos) videoTracks = await parseShelf(videos.results);
@@ -64,7 +66,7 @@ async function parseAlbum(album: MusicResponsiveListItem): Promise<SearchResult[
     const icon = album.thumbnails[0].url;
     const artist = album.author ? album.author.name : "Unknown";
 
-    return tracks.map(track => parseItem(track, icon, artist));
+    return tracks.map((track) => parseItem(track, icon, artist));
 }
 
 /**
@@ -75,12 +77,11 @@ async function parseShelf(shelf: ObservedArray<MusicResponsiveListItem>): Promis
     if (!shelf) return [];
 
     const results: SearchResult[] = [];
-    for(const track of shelf) {
+    for (const track of shelf) {
         if (!(track instanceof MusicResponsiveListItem)) return;
 
         // Check the item type.
-        if(track.item_type == "album")
-            results.push(...(await parseAlbum(track)));
+        if (track.item_type == "album") results.push(...(await parseAlbum(track)));
         else results.push(parseItem(track));
     }
 
@@ -102,9 +103,9 @@ function parseItem(
 
     // Check the artists type.
     if (item.artists) {
-        for(let i = 0; i < item.artists.length; i++) {
+        for (let i = 0; i < item.artists.length; i++) {
             artists += item.artists[i].name;
-            if(i < item.artists.length - 1) artists += ", ";
+            if (i < item.artists.length - 1) artists += ", ";
         }
     } else if (item.author) {
         artists = item.author.name;

@@ -4,7 +4,7 @@ window.onload = async () => {
     // Get URL parameters.
     const urlParams = new URLSearchParams(window.location.search);
     // Get the accessToken.
-    const code = urlParams.get('code');
+    const code = urlParams.get("code");
     // Remove the accessToken from the URL.
     window.history.replaceState({}, document.title, "/");
 

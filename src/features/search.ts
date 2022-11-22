@@ -1,8 +1,8 @@
 /* Imports. */
-import {logger} from "app/index";
+import { logger } from "app/index";
 import constants from "app/constants";
-import {SearchEngine, SearchResult, SearchResults} from "../types.js";
-import {Request, Response, Router} from "express";
+import { SearchEngine, SearchResult, SearchResults } from "../types.js";
+import { Request, Response, Router } from "express";
 
 import * as smart from "engines/smart";
 import * as ytmusic from "engines/ytmusic";
@@ -10,7 +10,12 @@ import * as youtube from "engines/youtube";
 import * as spotify from "engines/spotify";
 
 export const blankResult: SearchResult = {
-    artist: "", duration: 0, icon: "", title: "", url: "", id: ""
+    artist: "",
+    duration: 0,
+    icon: "",
+    title: "",
+    url: "",
+    id: ""
 };
 export const noResults: SearchResults = {
     top: blankResult,
@@ -25,14 +30,14 @@ export const noResults: SearchResults = {
 async function searchFor(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
     const query: string = req.params.query;
-    const engine: SearchEngine = (<SearchEngine> req.query.query) || "YouTube";
+    const engine: SearchEngine = <SearchEngine>req.query.query || "YouTube";
 
     // Pull filter settings.
-    const filter: string = (<string> req.query.filter) || "none";
+    const filter: string = <string>req.query.filter || "none";
 
     // Perform a search request.
     let result: SearchResults = noResults;
-    switch(engine) {
+    switch (engine) {
         case "YouTube":
             result = await youtube.search(query);
             break;
@@ -48,7 +53,7 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
     }
 
     // Check if the result is empty.
-    if(result == noResults) {
+    if (result == noResults) {
         rsp.status(404).send(constants.NO_RESULTS());
     } else {
         rsp.status(301).send(result);
@@ -62,17 +67,18 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
  */
 async function fetchTrack(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
-    const id: string = req.params.id
-    const engine: SearchEngine = (<SearchEngine> req.query.query) || "YouTube";
+    const id: string = req.params.id;
+    const engine: SearchEngine = <SearchEngine>req.query.query || "YouTube";
 
     // Check if the arguments are valid.
-    if(id == null) {
-        rsp.status(400).send(constants.INVALID_ARGUMENTS()); return;
+    if (id == null) {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
     }
 
     // Fetch the track.
     const result = await smart.fetchTrack(id, engine);
-    if(result == null) {
+    if (result == null) {
         rsp.status(404).send(constants.NO_RESULTS());
     }
 
