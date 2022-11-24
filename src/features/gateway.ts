@@ -264,6 +264,6 @@ export class Client {
         logger.debug("Client disconnected.");
         // Remove the client from the collections.
         delete clients[this.getId()];
-        delete users[this.user.userId];
+        if (this.user) delete users[this.user.userId];
     }
 }
