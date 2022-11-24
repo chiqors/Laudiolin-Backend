@@ -160,6 +160,16 @@ async function editPlaylist(req: Request, rsp: Response): Promise<void> {
             // Change the playlist description.
             playlist.description = body.description;
             break;
+        case "icon":
+            // Validate the body.
+            if (typeof body.icon != "string") {
+                rsp.status(400).send(constants.INVALID_ARGUMENTS());
+                return;
+            }
+
+            // Change the playlist icon.
+            playlist.icon = body.icon;
+            break;
         case "privacy":
             // Validate the body.
             if (typeof body.isPrivate != "boolean") {
