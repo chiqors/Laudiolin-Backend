@@ -77,18 +77,19 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     const avatarUrl = getAvatarUrl(id, avatar);
 
     // Save the data to the database.
-    const newUserData = defaultObject<User>(constants.DEFAULT_USER, {
+    const newUserData = {
         userId: id,
         accessToken: token,
         avatar: avatarUrl,
         refresh: refresh_token,
         type: token_type,
         scope
-    });
+    };
 
     // Check if the user already exists.
     const user = await database.getUser(id);
-    if (user == null) await database.saveUser(newUserData);
+    if (user == null)
+        await database.saveUser(defaultObject<User>(constants.DEFAULT_USER, newUserData));
     else await database.updateUser(newUserData);
 
     // Handoff to the client.
