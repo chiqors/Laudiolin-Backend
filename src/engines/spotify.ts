@@ -69,7 +69,7 @@ export function parseTrack(track: any): SearchResult {
         icon: track.album.images[0].url,
         url: track.external_urls.spotify,
         id: track.external_ids.isrc,
-        duration: track.duration_ms
+        duration: Math.floor(track.duration_ms / 1000)
     };
 }
 

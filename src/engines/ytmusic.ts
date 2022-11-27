@@ -117,6 +117,6 @@ function parseItem(
         icon: icon ?? item.thumbnails[0].url,
         url: "https://youtu.be/" + item.id,
         id: item.id,
-        duration: item.duration.seconds * 1000
+        duration: item.duration.seconds
     };
 }
