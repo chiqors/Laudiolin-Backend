@@ -92,8 +92,8 @@ async function handle(req: Request, rsp: Response): Promise<void> {
         await database.saveUser(defaultObject<User>(constants.DEFAULT_USER, newUserData));
     else await database.updateUser(newUserData);
 
-    // Handoff to the client.
-    rsp.redirect("/handoff?code=" + token);
+    // Handoff to the browser.
+    rsp.redirect(`/handoff?code=${token}&redirectUrl=${constants.WEB_TARGET}%2Fauthorize.html`);
 }
 
 /**

@@ -23,10 +23,12 @@ export default {
     PORT: $("PORT", 3000),
     /* The target HTTP route. */
     TARGET: process.env["TARGET"] || "http://localhost:3000",
+    /* The web version companion. */
+    WEB_TARGET: process.env["WEB_TARGET"] || "http://localhost:3001",
     /* The path to store files in. */
     STORAGE_PATH: $("STORAGE_PATH", `${process.cwd()}/files`),
     /* The MongoDB connection URI to use. */
-    MONGODB_URI: $("MONGODB_URI", <string>"mongodb://127.0.0.1:27017/"),
+    MONGODB_URI: $("MONGODB_URI", <string> "mongodb://127.0.0.1:27017/"),
 
     DOMAIN /* The app domain. */,
     SSL_KEY /* SSL key path. */,
