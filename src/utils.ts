@@ -1,4 +1,5 @@
 import { Request } from "express";
+import { SearchEngine } from "./types";
 
 /**
  * Checks if the given value is valid JSON.
@@ -133,4 +134,35 @@ export function shuffle<T>(array: T[]): T[] {
  */
 export async function toBuffer(blob: Blob): Promise<Buffer> {
     return Buffer.from(await blob.arrayBuffer());
+}
+
+/**
+ * Identifies what engine to use from a URL.
+ * @param url The URL to identify.
+ * @returns The engine, or null if none is found.
+ */
+export function identifyUrl(url: string): SearchEngine | null {
+    if (url.includes("https://youtu.be")
+        || url.includes("https://youtube.com")
+        || url.includes("https://www.youtube.com")) return "YouTube";
+    if (url.includes("https://open.spotify.com")) return "Spotify";
+    if (url.includes("https://soundcloud.com")) return "SoundCloud";
+
+    return null;
+}
+
+/**
+ * Extracts the ID of a playlist from a URL.
+ * @param url The URL to extract from.
+ */
+export function extractPlaylistId(url: string): string | null {
+    const type = identifyUrl(url);
+    if (type == "YouTube")
+        return url.includes("playlist?list=") ?
+            url.split("playlist?list=")[1] :
+            url.split("https://youtu.be/")[1];
+    if (type == "Spotify") return url.split("playlist/")[1];
+    if (type == "SoundCloud") return url.split("sets/")[1];
+
+    return null;
 }

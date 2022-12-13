@@ -5,7 +5,10 @@ import * as database from "features/database";
 import * as validate from "app/validate";
 
 import { Playlist, Track } from "app/types";
-import { isJson, getToken, sanitize, modelFrom } from "app/utils";
+import { isJson, getToken, sanitize, modelFrom, identifyUrl } from "app/utils";
+
+import * as youtube from "engines/ytmusic";
+import * as spotify from "engines/spotify";
 
 /**
  * Creates a playlist.
@@ -296,15 +299,89 @@ async function deletePlaylist(req: Request, rsp: Response): Promise<void> {
     rsp.status(200).send(constants.SUCCESS());
 }
 
+/**
+ * Imports a playlist from another source through a URL.
+ * @param req The HTTP request.
+ * @param rsp The new response.
+ */
+async function importPlaylist(req: Request, rsp: Response): Promise<void> {
+    // Check for authorization.
+    const token = getToken(req);
+    if (token == null) {
+        rsp.status(403).send(constants.NO_AUTHORIZATION());
+        return;
+    }
+
+    // Get the user from the database.
+    const user = await database.getUserByToken(token);
+
+    // Pull parameters.
+    const url = <string> req.body.url || "";
+    // Validate parameters.
+    if (!url || url == "") {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Validate the user can edit the playlist.
+    if (!user) {
+        rsp.status(403).send(constants.NO_AUTHORIZATION());
+        return;
+    }
+
+    // Identify the search engine to use.
+    const engine = identifyUrl(url);
+    if (engine == null) {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Parse the playlist into a Laudiolin playlist.
+    let playlist: Playlist | null = null;
+    switch (engine) {
+    case "YouTube":
+        break;
+    case "Spotify":
+        playlist = await spotify.playlist(url);
+        break;
+    }
+
+    // Check if the playlist is null.
+    if (playlist == null) {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Generate the playlist data.
+    playlist.id = await database.generatePlaylistId();
+    playlist.owner = user.userId;
+
+    // Check if the playlist is valid.
+    if (!validate.playlist(playlist)) {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Save the playlist to the database.
+    await database.savePlaylist(playlist);
+    // Add the playlist ID to the user.
+    user.playlists.push(playlist.id);
+    await database.updateUser(user);
+
+    // Send the playlist.
+    rsp.status(201).send(playlist);
+}
+
 /* -------------------------------------------------- */
 
 /* Create a router. */
 const app: Router = Router();
 
 /* Configure routes. */
+app.post("/playlist/create", createPlaylist);
+app.patch("/playlist/import", importPlaylist);
 app.get("/playlist/:id", fetchPlaylist);
 app.patch("/playlist/:id", editPlaylist);
-app.post("/playlist/create", createPlaylist);
 app.delete("/playlist/:id", deletePlaylist);
 
 /* Export the router. */

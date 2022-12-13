@@ -9,8 +9,9 @@ import { streamToIterable } from "youtubei.js/dist/src/utils/Utils";
 import Video from "youtubei.js/dist/src/parser/classes/Video";
 import Music from "youtubei.js/dist/src/core/Music";
 
-import { SearchResults, SearchResult } from "app/types";
+import { SearchResults, SearchResult, Playlist } from "app/types";
 import MusicResponsiveListItem from "youtubei.js/dist/src/parser/classes/MusicResponsiveListItem";
+import * as utils from "app/utils";
 
 let youtube: Innertube | null = null;
 let music: Music | null = null;
@@ -18,6 +19,8 @@ Innertube.create().then((instance) => {
     youtube = instance;
     music = instance.music;
     logger.info("Successfully authenticated with the YouTube API.");
+
+    playlist("https://www.youtube.com/playlist?list=PL_vMOKCH_Y_s32YQ7UXWFVffRHr7gjLeM");
 });
 
 /**
@@ -41,6 +44,17 @@ export async function search(query: string): Promise<SearchResults> {
         .slice(0, 8);
 
     return { top: results[0], results };
+}
+
+/**
+ * Parses a YouTube Music search into a collection of tracks.
+ * @param url The URL to parse.
+ */
+export async function playlist(url: string): Promise<Playlist> {
+    const playlist = await youtube.getPlaylist(utils.extractPlaylistId(url));
+    const info = playlist.info;
+    console.log(playlist);
+    return null;
 }
 
 /**
