@@ -4,6 +4,7 @@ import constants from "app/constants";
 import filter from "filters/spotifySong";
 import SpotifyWebApi from "spotify-web-api-node";
 
+import * as ytmusic from "./ytmusic";
 import * as youtube from "./youtube";
 import * as utils from "app/utils";
 
@@ -64,6 +65,18 @@ export async function search(query: string, smartFilter: boolean = false): Promi
 }
 
 /**
+ * Performs a Spotify search.
+ * @param isrc The ISRC to search for.
+ */
+async function searchIsrc(isrc: string): Promise<SearchResult> {
+    const search = await spotify.searchTracks(`isrc:${isrc}`);
+    const items = search.body.tracks.items;
+
+    if (items.length == 0) return null;
+    return tracks[isrc] = parseTrack(items[0]);
+}
+
+/**
  * Creates a playlist from a Spotify playlist.
  * @param url The playlist URL.
  */
@@ -120,19 +133,15 @@ export function parseTrack(track: any): SearchResult | null {
  */
 export async function download(isrc: string): Promise<string> {
     // Get the track data from the ISRC.
-    const track = tracks[isrc];
+    let track = tracks[isrc];
     if (!track) {
         // Perform a search for the track.
-        const searchResults = await youtube.search(isrc);
-        const topResultUrl = searchResults.top.url;
-
-        // Download the track.
-        return await youtube.download(topResultUrl);
+        track = await searchIsrc(isrc);
     }
 
     // Search for the track.
-    const searchResults = await youtube.search(
-        `${track.title} - ${track.artist}`);
+    const searchResults = await ytmusic.search(
+        `${track.title} - ${track.artist} - Topic`);
     const topResultUrl = searchResults.top.url;
 
     // Download the track.
@@ -148,19 +157,15 @@ export async function download(isrc: string): Promise<string> {
  */
 export async function stream(isrc: string, pipe: any): Promise<void> {
     // Get the track data from the ISRC.
-    const track = tracks[isrc];
+    let track = tracks[isrc];
     if (!track) {
         // Perform a search for the track.
-        const searchResults = await youtube.search(isrc);
-        const topResultUrl = searchResults.top.url;
-
-        // Download the track.
-        return await youtube.stream(topResultUrl, pipe);
+        track = await searchIsrc(isrc);
     }
 
     // Search for the track.
     const searchResults = await youtube.search(
-        `${track.title} - ${track.artist}`);
+        `${track.title} - ${track.artist} - Topic`);
     const topResultUrl = searchResults.top.url;
 
     // Download the track.

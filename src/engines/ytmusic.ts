@@ -34,9 +34,10 @@ export async function search(query: string): Promise<SearchResults> {
 async function parseTracks(search: Search): Promise<SearchResult[]> {
     // Extract different search results.
     // These are sorted from high -> low priority.
-    const albums = await search.getMore(search.albums);
-    const songs = await search.getMore(search.songs);
-    const videos = await search.getMore(search.videos);
+    let albums, songs, videos;
+    try { albums = await search.getMore(search.albums); } catch { }
+    try { songs = await search.getMore(search.songs); } catch { }
+    try { videos = await search.getMore(search.videos); } catch { }
 
     // Parse each search result into a collection of tracks.
     let albumTracks = [],

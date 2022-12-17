@@ -7,7 +7,7 @@ import * as validate from "app/validate";
 import { Playlist, Track } from "app/types";
 import { isJson, getToken, sanitize, modelFrom, identifyUrl } from "app/utils";
 
-import * as youtube from "engines/ytmusic";
+import * as youtube from "engines/youtube";
 import * as spotify from "engines/spotify";
 
 /**
@@ -340,6 +340,7 @@ async function importPlaylist(req: Request, rsp: Response): Promise<void> {
     let playlist: Playlist | null = null;
     switch (engine) {
     case "YouTube":
+        playlist = await youtube.playlist(url);
         break;
     case "Spotify":
         playlist = await spotify.playlist(url);
