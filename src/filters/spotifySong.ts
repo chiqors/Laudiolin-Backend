@@ -31,16 +31,14 @@ export default async function (data: SearchResults): Promise<SearchResults | und
  * @param data The data to filter.
  */
 async function filter(data: SearchResult): Promise<SearchResult | undefined> {
-    const id = data.id;
-    if (!id) return undefined;
-
     // Perform a YouTube search for the song.
-    const results = (await youtube.search(id)).results;
+    const results = (await youtube.search(`${data.title} - ${data.artist} - Topic`)).results;
     // Check if a song matches the result.
     const result = results.find((result) => {
         return (
             result.title == data.title &&
-            (result.artist.includes(data.artist) || result.artist.includes("Various Artists")) &&
+            (result.artist.includes(data.artist) ||
+                result.artist.includes("Various Artists")) &&
             result.artist.includes("Topic")
         );
     });

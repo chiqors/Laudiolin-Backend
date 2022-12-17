@@ -4,7 +4,6 @@ import constants from "app/constants";
 import filter from "filters/spotifySong";
 import SpotifyWebApi from "spotify-web-api-node";
 
-import * as ytmusic from "./ytmusic";
 import * as youtube from "./youtube";
 import * as utils from "app/utils";
 
@@ -68,7 +67,7 @@ export async function search(query: string, smartFilter: boolean = false): Promi
  * Performs a Spotify search.
  * @param isrc The ISRC to search for.
  */
-async function searchIsrc(isrc: string): Promise<SearchResult> {
+export async function searchIsrc(isrc: string): Promise<SearchResult> {
     const search = await spotify.searchTracks(`isrc:${isrc}`);
     const items = search.body.tracks.items;
 
@@ -140,7 +139,7 @@ export async function download(isrc: string): Promise<string> {
     }
 
     // Search for the track.
-    const searchResults = await ytmusic.search(
+    const searchResults = await youtube.search(
         `${track.title} - ${track.artist} - Topic`);
     const topResultUrl = searchResults.top.url;
 

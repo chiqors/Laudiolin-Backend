@@ -12,7 +12,7 @@ import * as spotify from "engines/spotify";
 async function download(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
     const id: string = <string>req.query.id || "";
-    const source: string = <string>req.query.source || "YouTube";
+    const source: string = <string>req.query.engine || "YouTube";
 
     // Validate arguments.
     if (id == "") {
@@ -49,7 +49,7 @@ async function download(req: Request, rsp: Response): Promise<void> {
 async function stream(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
     const id: string = <string>req.query.id || "";
-    const source: string = <string>req.query.source || "YouTube";
+    const source: string = <string>req.query.engine || "YouTube";
 
     // Validate arguments.
     if (id == "") {

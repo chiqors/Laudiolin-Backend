@@ -1,7 +1,6 @@
 import { logger } from "app/index";
 import constants from "app/constants";
 import { Innertube } from "youtubei.js";
-import { noResults } from "features/search";
 
 import { existsSync, createWriteStream, createReadStream } from "node:fs";
 import { streamToIterable } from "youtubei.js/dist/src/utils/Utils";
@@ -9,10 +8,10 @@ import { streamToIterable } from "youtubei.js/dist/src/utils/Utils";
 import Music from "youtubei.js/dist/src/core/Music";
 
 import { SearchResults, SearchResult, Playlist } from "app/types";
-import MusicResponsiveListItem from "youtubei.js/dist/src/parser/classes/MusicResponsiveListItem";
 import PlaylistVideo from "youtubei.js/dist/src/parser/classes/PlaylistVideo";
 
 import * as utils from "app/utils";
+import Video from "youtubei.js/dist/src/parser/classes/Video";
 
 let youtube: Innertube | null = null;
 let music: Music | null = null;
@@ -27,18 +26,13 @@ Innertube.create().then((instance) => {
  * @param query The query to search for.
  */
 export async function search(query: string): Promise<SearchResults> {
-    const search = await music.search(query);
-    if (search.songs == null) return noResults;
-
-    const tracks = search.songs.contents;
-
-    // console.log(search.songs.contents);
-    // console.log(search.videos.contents);
-    // console.log(search.albums.contents);
+    const search = await youtube.search(query);
+    const tracks = search.videos;
 
     const results = tracks
         .map((track) => {
-            if (track instanceof MusicResponsiveListItem) return parseVideo(track);
+            if (track instanceof Video)
+                return parseVideo(track);
         })
         .slice(0, 8);
 
@@ -66,7 +60,7 @@ export async function playlist(url: string): Promise<Playlist> {
     // Parse the playlist tracks.
     for (const item of items) {
         if (item instanceof PlaylistVideo)
-            playlist.tracks.push(await parsePlaylistVideo(item));
+            playlist.tracks.push(await parseVideo(item));
     }
 
     return playlist;
@@ -76,32 +70,11 @@ export async function playlist(url: string): Promise<Playlist> {
  * Parses a video into a search result.
  * @param video The YouTube video to parse.
  */
-export function parseVideo(video: MusicResponsiveListItem): SearchResult {
-    let mergedArtists = "";
-    for (let i = 0; i < video.artists.length; i++) {
-        mergedArtists += video.artists[i].name;
-        if (i < video.artists.length - 1) mergedArtists += ", ";
-    }
-
-    return {
-        title: video.title,
-        artist: mergedArtists,
-        icon: video.thumbnails[0].url,
-        url: "https://youtu.be/" + video.id,
-        id: video.id,
-        duration: video.duration.seconds
-    };
-}
-
-/**
- * Parses a video from a playlist into a search result.
- * @param video The YouTube video to parse.
- */
-export function parsePlaylistVideo(video: PlaylistVideo): SearchResult {
+export function parseVideo(video: Video | PlaylistVideo): SearchResult {
     return {
         title: video.title.text,
         artist: video.author.name,
-        icon: video.thumbnails[0] ? video.thumbnails[0].url : "",
+        icon: video.thumbnails[0].url,
         url: "https://youtu.be/" + video.id,
         id: video.id,
         duration: video.duration.seconds

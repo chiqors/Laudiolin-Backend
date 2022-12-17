@@ -61,15 +61,11 @@ export async function search(query: string): Promise<SearchResults> {
 }
 
 /**
- * Fetches a track's data from the URL.
- * @param url The URL to fetch from.
+ * Fetches a track's data from its ID.
+ * @param id The ID of the track to fetch.
+ * @param engine The engine to search from.
  */
 export async function fetchTrack(id: string, engine?: string): Promise<Track | null> {
-    // Check the URL type.
-    if (!engine) {
-        engine = "YouTube"; // Then fetch with engine.
-    }
-
     // Get the video data.
     const video = await youtube.getInfo(id);
     // Parse the video into a track.

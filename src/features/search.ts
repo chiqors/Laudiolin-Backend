@@ -1,11 +1,9 @@
 /* Imports. */
-import { logger } from "app/index";
 import constants from "app/constants";
 import { SearchEngine, SearchResult, SearchResults } from "../types.js";
 import { Request, Response, Router } from "express";
 
 import * as smart from "engines/smart";
-import * as ytmusic from "engines/ytmusic";
 import * as youtube from "engines/youtube";
 import * as spotify from "engines/spotify";
 
@@ -68,7 +66,7 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
 async function fetchTrack(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
     const id: string = req.params.id;
-    const engine: SearchEngine = <SearchEngine>req.query.query || "YouTube";
+    const engine: SearchEngine = <SearchEngine> req.query.query || "YouTube";
 
     // Check if the arguments are valid.
     if (id == null) {
@@ -77,7 +75,16 @@ async function fetchTrack(req: Request, rsp: Response): Promise<void> {
     }
 
     // Fetch the track.
-    const result = await smart.fetchTrack(id, engine);
+    let result = null;
+    switch (engine) {
+    case "YouTube":
+        result = await smart.fetchTrack(id, engine);
+        break;
+    case "Spotify":
+        result = await spotify.searchIsrc(id);
+        break;
+    }
+
     if (result == null) {
         rsp.status(404).send(constants.NO_RESULTS());
     }
