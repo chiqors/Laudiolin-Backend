@@ -55,6 +55,9 @@ export default {
     /* Discord user info URL. */
     DISCORD_USER_INFO: "https://discord.com/api/v10/users/@me",
 
+    /* HTTP proxy list path. */
+    HTTP_PROXIES: process.env["HTTP_PROXIES"] || `${process.cwd()}/proxies.txt`,
+
     /* The logger's log level. */
     LOG_LEVEL: $("LOG_LEVEL", "info"),
     /* Should the logger run in debug? */

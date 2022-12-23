@@ -7,9 +7,12 @@ import MusicResponsiveListItem from "youtubei.js/dist/src/parser/classes/MusicRe
 
 import type { SearchResult, SearchResults } from "app/types";
 import { ObservedArray } from "youtubei.js/dist/src/parser/helpers";
+import * as utils from "app/utils";
 
 let music: Music | null = null;
-Innertube.create().then((instance) => {
+Innertube.create({
+    fetch: utils.proxyFetch
+}).then((instance) => {
     music = instance.music;
     logger.info("Successfully authenticated with the YTMusic API.");
 });

@@ -93,14 +93,25 @@ export async function playlist(url: string): Promise<Playlist> {
     };
 
     // Parse the playlist tracks.
-    for (const item of body.tracks.items) {
-        const track = item.track;
-        if (!track) continue;
+    let offset = 0, limit = body.tracks.total;
+    let items = body.tracks.items;
+    while (true) {
+        for (const item of items) {
+            const track = item.track;
+            if (!track) continue;
 
-        // Parse the track.
-        const parsed = parseTrack(track);
-        if (!parsed) continue;
-        playlist.tracks.push(parsed);
+            // Parse the track.
+            const parsed = parseTrack(track);
+            if (!parsed) continue;
+            playlist.tracks.push(parsed);
+        }
+
+        // Check if there are more tracks.
+        if (offset < limit) {
+            offset += items.length;
+            items = (await spotify.getPlaylistTracks(
+                body.id, { offset })).body.items;
+        } else break;
     }
 
     return playlist;

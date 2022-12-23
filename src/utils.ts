@@ -1,5 +1,38 @@
+import proxyAgent from "proxy-agent";
 import { Request } from "express";
 import { SearchEngine } from "./types";
+import { readFileSync } from "node:fs";
+import constants from "./constants";
+
+// List of HTTP proxies.
+let proxies: string[] = [];
+
+/**
+ * Loads the HTTP proxies list from the disk.
+ */
+export function loadProxies(): string[] {
+    return proxies.length > 0 ? proxies :
+        proxies = readFileSync(constants.HTTP_PROXIES,
+            "utf-8").split("\n");
+}
+
+/**
+ * Attempts to perform a fetch request with a proxy.
+ */
+export async function proxyFetch(
+    input: RequestInfo | URL,
+    init?: RequestInit
+): Promise<Response> {
+    // Get a random proxy.
+    const proxyInfo = loadProxies()[Math.floor(Math.random() * proxies.length)];
+    const proxy = new proxyAgent(`http://${proxyInfo}`);
+
+    // Attempt to fetch the request.
+    return await fetch(input, {
+        // @ts-ignore
+        ...init, headers: { agent: proxy }
+    });
+}
 
 /**
  * Checks if the given value is valid JSON.
@@ -37,7 +70,7 @@ export function isUrl(url: string): boolean {
  * @return The authorization token, or null if none is found.
  */
 export function getToken(req: Request): string | null {
-    return <string>req.headers.authorization ?? undefined;
+    return <string> req.headers.authorization ?? undefined;
 }
 
 /**

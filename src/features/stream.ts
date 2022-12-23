@@ -23,6 +23,7 @@ async function download(req: Request, rsp: Response): Promise<void> {
     // Download the video.
     let path: string = "";
     switch (source) {
+        case "All":
         case "YouTube":
             path = await youtube.download(id);
             break;

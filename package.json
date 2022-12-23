@@ -14,7 +14,7 @@
     "watch:compile": "tsc --watch",
     "watch:start": "tsc-watch --onsuccess \"node build/index.js\"",
     "compile": "tsc",
-    "build": "ncc build src/index.ts -o js -m --target es2022",
+    "build": "ncc build src/index.ts -o js --target es2022",
     "lint": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\""
   },
 
@@ -23,9 +23,10 @@
     "cors": "^2.8.5",
     "express": "^4.18.1",
     "express-ws": "^5.0.2",
-    "youtubei.js": "^2.5.2",
+    "youtubei.js": "^2.6.0",
     "spotify-web-api-node": "^5.0.2",
 
+    "proxy-agent": "^5.0.0",
     "dotenv": "^16.0.2",
     "mongoose": "^6.5.4",
     "tslog": "^3.3.4"
@@ -45,6 +46,6 @@
     "concurrently": "^7.6.0",
 
     "prettier": "^2.7.1",
-    "@vercel/ncc": "^0.34.0"
+    "@vercel/ncc": "^0.36.0"
   }
 }

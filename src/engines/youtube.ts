@@ -15,7 +15,9 @@ import Video from "youtubei.js/dist/src/parser/classes/Video";
 
 let youtube: Innertube | null = null;
 let music: Music | null = null;
-Innertube.create().then((instance) => {
+Innertube.create({
+    fetch: utils.proxyFetch
+}).then((instance) => {
     youtube = instance;
     music = instance.music;
     logger.info("Successfully authenticated with the YouTube API.");
@@ -50,8 +52,8 @@ export async function playlist(url: string): Promise<Playlist> {
     // Create the playlist data.
     const playlist: Playlist = {
         owner: "", id: "",
-        name: info.title,
-        description: info.description,
+        name: info.title ?? "No title.",
+        description: info.description ?? "No description.",
         icon: info.thumbnails[0] ? info.thumbnails[0].url : "",
         isPrivate: info.privacy != "PUBLIC",
         tracks: []

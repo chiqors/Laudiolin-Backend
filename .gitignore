@@ -8,3 +8,4 @@ js/
 # Development files.
 .env
 files/
+proxies.txt
