@@ -26,6 +26,7 @@
     "youtubei.js": "^2.6.0",
     "spotify-web-api-node": "^5.0.2",
 
+    "node-fetch": "^2.6.7",
     "proxy-agent": "^5.0.0",
     "dotenv": "^16.0.2",
     "mongoose": "^6.5.4",

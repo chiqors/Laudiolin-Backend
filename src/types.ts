@@ -83,6 +83,14 @@ export type NowPlayingMessage = BaseGatewayMessage & {
     track: Track | null;
     seek: number;
 };
+/**
+ * From client.
+ * @param with The user ID of the person to listen along with. Can be null to stop.
+ */
+export type ListenMessage = BaseGatewayMessage & {
+    type: "listen";
+    with: string;
+}
 
 // To & from client.
 export type VolumeMessage = BaseGatewayMessage & {

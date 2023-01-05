@@ -23,15 +23,15 @@ export async function proxyFetch(
     input: RequestInfo | URL,
     init?: RequestInit
 ): Promise<Response> {
-    // Get a random proxy.
-    const proxyInfo = loadProxies()[Math.floor(Math.random() * proxies.length)];
-    const proxy = new proxyAgent(`http://${proxyInfo}`);
+    // Check if a proxy should be used.
+    if (process.env["USE_PROXY"] == "true") {
+        // Get a random proxy.
+        const proxyInfo = loadProxies()[Math.floor(Math.random() * proxies.length)];
+        init["agent"] = new proxyAgent(`https://${proxyInfo}`);
+    }
 
     // Attempt to fetch the request.
-    return await fetch(input, {
-        // @ts-ignore
-        ...init, headers: { agent: proxy }
-    });
+    return await require("node-fetch")(input, init);
 }
 
 /**

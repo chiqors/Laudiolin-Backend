@@ -40,13 +40,23 @@ const handlers = {
     /* Now playing. (client) */
     playing: require("messages/playing"),
     /* Update volume. (client) */
-    volume: require("messages/volume")
+    volume: require("messages/volume"),
+    /* Listen along. (client) */
+    listen: require("messages/listen"),
 };
 
 /* Create a connection handler. */
 export default function (socket: WebSocket, incMsg: IncomingMessage): void {
     // Process the connection.
     handleConnection(socket, incMsg);
+}
+
+/**
+ * Tries to get a client in the gateway by the user ID.
+ * @param userId The user ID to search for.
+ */
+export function getUserById(userId: string): Client | null {
+    return users[userId] || null;
 }
 
 export class Client {
@@ -121,17 +131,30 @@ export class Client {
     }
 
     /**
+     * Stops listening along with another client.
+     */
+    stopListeningAlong(): void {
+        // Check if the client is listening along.
+        if (!this.listeningWith) return;
+
+        // Remove this client from the listening along list.
+        delete this.listeningWith.listeningAlong[this.getId()];
+        // Remove the listening with.
+        this.listeningWith = null;
+    }
+
+    /**
      * Syncs this client with the listening with client.
      */
     syncWith(): void {
         // Check if the client is listening with someone.
         if (!this.listeningWith) return;
-        const listeningWith = this.listeningWith;
 
         // Send a sync message.
         this.send(<types.SyncMessage> {
-            track: listeningWith.listeningTo,
-            progress: listeningWith.progress
+            type: "sync",
+            track: this.listeningWith.listeningTo,
+            progress: this.listeningWith.progress
         });
     }
 

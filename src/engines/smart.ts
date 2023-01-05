@@ -1,5 +1,5 @@
 import { logger } from "app/index";
-import { shuffle } from "app/utils";
+import { proxyFetch, shuffle } from "app/utils";
 import constants from "app/constants";
 
 import type { SearchResult, SearchResults, Track } from "app/types";

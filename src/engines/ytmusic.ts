@@ -10,9 +10,7 @@ import { ObservedArray } from "youtubei.js/dist/src/parser/helpers";
 import * as utils from "app/utils";
 
 let music: Music | null = null;
-Innertube.create({
-    fetch: utils.proxyFetch
-}).then((instance) => {
+Innertube.create().then((instance) => {
     music = instance.music;
     logger.info("Successfully authenticated with the YTMusic API.");
 });

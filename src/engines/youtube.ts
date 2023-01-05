@@ -15,9 +15,7 @@ import Video from "youtubei.js/dist/src/parser/classes/Video";
 
 let youtube: Innertube | null = null;
 let music: Music | null = null;
-Innertube.create({
-    fetch: utils.proxyFetch
-}).then((instance) => {
+Innertube.create().then((instance) => {
     youtube = instance;
     music = instance.music;
     logger.info("Successfully authenticated with the YouTube API.");

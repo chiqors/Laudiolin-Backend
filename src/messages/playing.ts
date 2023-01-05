@@ -12,4 +12,9 @@ export default function (client: Client, data: NowPlayingMessage) {
     client.listeningTo = data.track;
     // Set the progress.
     client.progress = data.seek;
+
+    // Update listening to clients.
+    for (const id in client.listeningAlong) {
+        client.listeningAlong[id]?.syncWith();
+    }
 }
