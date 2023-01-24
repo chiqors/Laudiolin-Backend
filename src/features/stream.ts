@@ -3,6 +3,7 @@ import constants from "app/constants";
 import { Request, Response, Router } from "express";
 import * as youtube from "engines/youtube";
 import * as spotify from "engines/spotify";
+import { identifyId } from "app/utils";
 
 /**
  * Download the specified video.
@@ -12,12 +13,17 @@ import * as spotify from "engines/spotify";
 async function download(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
     const id: string = <string>req.query.id || "";
-    const source: string = <string>req.query.engine || "YouTube";
+    let source: string = <string>req.query.engine || "";
 
     // Validate arguments.
     if (id == "") {
         rsp.status(400).send(constants.INVALID_ARGUMENTS());
         return;
+    }
+
+    // Identify source.
+    if (source == "") {
+        source = identifyId(id);
     }
 
     // Download the video.
@@ -39,7 +45,7 @@ async function download(req: Request, rsp: Response): Promise<void> {
     }
 
     // Serve the file.
-    rsp.status(301).sendFile(path);
+    rsp.status(200).sendFile(path);
 }
 
 /**
@@ -50,12 +56,17 @@ async function download(req: Request, rsp: Response): Promise<void> {
 async function stream(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
     const id: string = <string>req.query.id || "";
-    const source: string = <string>req.query.engine || "YouTube";
+    let source: string = <string>req.query.engine || "";
 
     // Validate arguments.
     if (id == "") {
         rsp.status(400).send(constants.INVALID_ARGUMENTS());
         return;
+    }
+
+    // Identify source.
+    if (source == "") {
+        source = identifyId(id);
     }
 
     // Set the response headers.

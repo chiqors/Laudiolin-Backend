@@ -41,9 +41,7 @@ async function parseTracks(search: Search): Promise<SearchResult[]> {
     try { videos = await search.getMore(search.videos); } catch { }
 
     // Parse each search result into a collection of tracks.
-    let albumTracks = [],
-        songTracks = [],
-        videoTracks = [];
+    let albumTracks = [], songTracks = [], videoTracks = [];
     if (albums) albumTracks = await parseShelf(albums.results);
     if (songs) songTracks = await parseShelf(songs.results);
     if (videos) videoTracks = await parseShelf(videos.results);

@@ -68,6 +68,12 @@ export async function search(query: string, smartFilter: boolean = false): Promi
  * @param isrc The ISRC to search for.
  */
 export async function searchIsrc(isrc: string): Promise<SearchResult> {
+    // Check if the ID is an ISRC.
+    if (isrc.length != 12) {
+        // Get the ISRC from Spotify.
+        isrc = await getIsrc(isrc);
+    }
+
     const search = await spotify.searchTracks(`isrc:${isrc}`);
     const items = search.body.tracks.items;
 
@@ -136,12 +142,27 @@ export function parseTrack(track: any): SearchResult | null {
 }
 
 /**
+ * Fetches the ISRC of a Spotify track.
+ * @param spotifyId The Spotify ID of the track.
+ */
+async function getIsrc(spotifyId: string): Promise<string> {
+    const {body} = await spotify.getTrack(spotifyId);
+    return body.external_ids.isrc ?? spotifyId;
+}
+
+/**
  * Downloads the specified track.
  * Uses the YouTube engine to download an associated video.
  * Returns the path to the file on the local system.
  * @param isrc The ISRC of the track to download.
  */
 export async function download(isrc: string): Promise<string> {
+    // Check if the ID is an ISRC.
+    if (isrc.length != 12) {
+        // Get the ISRC from Spotify.
+        isrc = await getIsrc(isrc);
+    }
+
     // Get the track data from the ISRC.
     let track = tracks[isrc];
     if (!track) {
@@ -166,6 +187,12 @@ export async function download(isrc: string): Promise<string> {
  * @param pipe The pipe to stream the data to.
  */
 export async function stream(isrc: string, pipe: any): Promise<void> {
+    // Check if the ID is an ISRC.
+    if (isrc.length != 12) {
+        // Get the ISRC from Spotify.
+        isrc = await getIsrc(isrc);
+    }
+
     // Get the track data from the ISRC.
     let track = tracks[isrc];
     if (!track) {

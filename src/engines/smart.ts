@@ -84,10 +84,9 @@ async function parseTracks(search: Search): Promise<SearchResult[]> {
     const songs: any = search.songs;
 
     // Parse each search result into a collection of tracks.
-    let albumTracks = [],
-        songTracks = [];
-    if (albums.contents) albumTracks = await parseShelf(albums.contents);
-    if (songs.contents) songTracks = await parseShelf(songs.contents);
+    let albumTracks = [], songTracks = [];
+    if (albums && albums.contents) albumTracks = await parseShelf(albums.contents);
+    if (songs && songs.contents) songTracks = await parseShelf(songs.contents);
 
     // Merge all tracks into a single collection.
     return [...albumTracks, ...songTracks];

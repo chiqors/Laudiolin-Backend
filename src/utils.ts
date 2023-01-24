@@ -170,6 +170,20 @@ export async function toBuffer(blob: Blob): Promise<Buffer> {
 }
 
 /**
+ * Identifies what engine to use from an ID.
+ * @param id The ID to identify.
+ * @returns The engine, or null if none is found.
+ */
+export function identifyId(id: string): SearchEngine | null {
+    switch (id.length) {
+        case 11: return "YouTube";
+        case 12: return "Spotify";
+        case 22: return "Spotify";
+        default: return null;
+    }
+}
+
+/**
  * Identifies what engine to use from a URL.
  * @param url The URL to identify.
  * @returns The engine, or null if none is found.

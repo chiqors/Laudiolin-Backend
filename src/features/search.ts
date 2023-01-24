@@ -7,6 +7,8 @@ import * as smart from "engines/smart";
 import * as youtube from "engines/youtube";
 import * as spotify from "engines/spotify";
 
+import { identifyId } from "app/utils";
+
 export const blankResult: SearchResult = {
     artist: "",
     duration: 0,
@@ -66,12 +68,17 @@ async function searchFor(req: Request, rsp: Response): Promise<void> {
 async function fetchTrack(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
     const id: string = req.params.id;
-    const engine: SearchEngine = <SearchEngine> req.query.query || "YouTube";
+    let engine: string = <string> req.query.query || "";
 
     // Check if the arguments are valid.
     if (id == null) {
         rsp.status(400).send(constants.INVALID_ARGUMENTS());
         return;
+    }
+
+    // Identify engine.
+    if (engine == "") {
+        engine = identifyId(id);
     }
 
     // Fetch the track.
