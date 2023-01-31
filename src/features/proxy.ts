@@ -5,7 +5,9 @@ import { Request, Response, Router } from "express";
 import { toBuffer } from "app/utils";
 
 // URL for Google Images.
-const imageUrl = `https://lh3.googleusercontent.com`;
+const googleUrl = `https://lh3.googleusercontent.com`;
+const spotifyUrl = `https://i.scdn.co/image`;
+const youTubeUrl = `https://i.ytimg.com/vi`
 
 /**
  * Proxy a request.
@@ -24,16 +26,29 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     }
 
     // Proxy the request.
+    let response = null, buffer = null;
+
     switch (from) {
         default:
             rsp.status(400).send(constants.INVALID_ARGUMENTS());
             return;
-        case "cart": // Cover art.
-            const response = await fetch(`${imageUrl}/${url}`);
-            const buffer = await response.blob();
+        case "cart": // Google cover art.
+            response = await fetch(`${googleUrl}/${url}`);
+            buffer = await response.blob();
             rsp.status(200).send(await toBuffer(buffer));
-            return;
+            break;
+        case "spot": // Spotify cover art.
+            response = await fetch(`${spotifyUrl}/${url}`);
+            buffer = await response.blob();
+            break;
+        case "yt": // YouTube cover art.
+            response = await fetch(`${youTubeUrl}/${url}/hq720.jpg`);
+            buffer = await response.blob();
+            break;
     }
+
+    // Send the response.
+    rsp.status(200).send(await toBuffer(buffer));
 }
 
 /* -------------------------------------------------- */
