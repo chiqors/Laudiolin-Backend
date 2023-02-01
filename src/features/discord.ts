@@ -70,7 +70,7 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     }
 
     // Pull data from the user response.
-    const { id, avatar } = userData;
+    const { id, avatar, username, discriminator } = userData;
     // Generate a new token.
     const token = await database.generateUserToken();
     // Get the avatar URL.
@@ -79,6 +79,8 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     // Save the data to the database.
     const newUserData = {
         userId: id,
+        username,
+        discriminator,
         accessToken: token,
         avatar: avatarUrl,
         refresh: refresh_token,

@@ -43,6 +43,8 @@ export type User = {
 
     accessToken?: string;
 
+    username?: string;
+    discriminator?: string;
     userId?: string;
     avatar?: string;
 
