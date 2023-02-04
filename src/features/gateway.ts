@@ -184,6 +184,22 @@ export class Client {
      */
 
     /**
+     * Adds the track to the recently played list.
+     * @param track The track to add.
+     */
+    async addRecentlyPlayed(track: Track): Promise<void> {
+        // Pull the list of recently played tracks.
+        const recentlyPlayed = this.user.recentlyPlayed || [];
+        // Add the track to the list.
+        recentlyPlayed.unshift(track);
+        // Update the user's recently played tracks.
+        this.user.recentlyPlayed = recentlyPlayed.slice(0, 9);
+
+        // Save the user.
+        await database.saveUser(this.user);
+    }
+
+    /**
      * Pings the client.
      */
     ping(): void {

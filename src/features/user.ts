@@ -57,6 +57,60 @@ async function fetch(req: Request, rsp: Response): Promise<void> {
     rsp.status(301).send(publicUser);
 }
 
+/**
+ * Modifies a user's favorite tracks.
+ * @param req The HTTP request.
+ * @param rsp The new response.
+ */
+async function favorite(req: Request, rsp: Response): Promise<void> {
+    // Check for authorization.
+    const token = getToken(req);
+    // Check for an operation.
+    const operation = req.header("Operation");
+
+    // Check if one of the prerequisites is missing.
+    if (token == null || operation == null) {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Check if the operation is valid.
+    if (operation != "add" && operation != "remove") {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Get the user from the database.
+    const user = await database.getUserByToken(token);
+    // Check if the user is empty.
+    if (user == null) {
+        rsp.status(404).send(constants.INVALID_TOKEN());
+        return;
+    }
+
+    // Perform the operation on the user's favorites.
+    const track = req.body;
+    if (operation == "add") {
+        // Check if the track is already in the favorites.
+        if (user.likedSongs.find(t => t.id == track.id)) {
+            rsp.status(400).send(constants.INVALID_ARGUMENTS());
+            return;
+        }
+
+        // Add the track to the favorites.
+        user.likedSongs.push(track);
+    } else {
+        // Remove the track from the favorites.
+        user.likedSongs = user.likedSongs.filter(t => t.id != track.id);
+    }
+
+    // Update the user in the database.
+    await database.updateUser(user);
+
+    // Send the list of favorites.
+    rsp.status(200).send(user.likedSongs);
+}
+
 /* -------------------------------------------------- */
 
 /* Create a router. */
@@ -65,6 +119,7 @@ const app: Router = Router();
 /* Configure routes. */
 app.get("/user", fetch);
 app.get("/user/:id", fetch);
+app.post("/user/favorite", favorite);
 
 /* Export the router. */
 export default app;

@@ -43,7 +43,8 @@ export const PlaylistSchema = new Schema({
 });
 export const UserSchema = new Schema({
     playlists: Array, // List of playlist IDs.
-    likedSongs: Array, // List of track IDs.
+    likedSongs: Array, // List of track objects.
+    recentlyPlayed: Array, // List of track objects.
 
     accessToken: String, // The user's client access token.
 
