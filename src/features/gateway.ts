@@ -196,7 +196,7 @@ export class Client {
         this.user.recentlyPlayed = recentlyPlayed.slice(0, 9);
 
         // Save the user.
-        await database.saveUser(this.user);
+        await database.updateUser(this.user);
     }
 
     /**
