@@ -11,10 +11,10 @@ export default async function (client: Client, data: NowPlayingMessage) {
     const { track, seek } = data;
 
     // Check if the current track is different to the one sent.
-    if (client.getUser() &&
+    if (client.isLoggedIn() && track &&
         client.listeningTo?.id != track?.id) {
-        // Push the current track to the recently played list.
-        await client.addRecentlyPlayed(client.listeningTo);
+        // Push the new track to the recently played list.
+        await client.addRecentlyPlayed(track);
     }
 
     // Set the currently listening track.
@@ -27,4 +27,3 @@ export default async function (client: Client, data: NowPlayingMessage) {
         client.listeningAlong[id]?.syncWith();
     }
 }
-5

@@ -61,7 +61,7 @@ export function getUserById(userId: string): Client | null {
 
 export class Client {
     private hasInitialized: boolean = false;
-    private user: types.User = null;
+    private userId: string = null;
     lastPing: number = Date.now();
 
     /* Player information. */
@@ -85,6 +85,13 @@ export class Client {
      */
 
     /**
+     * Returns the client's login state.
+     */
+    isLoggedIn(): boolean {
+        return this.userId != null;
+    }
+
+    /**
      * Returns the client's socket.
      */
     getHandle(): WebSocket {
@@ -94,8 +101,8 @@ export class Client {
     /**
      * Returns the associated user.
      */
-    getUser(): types.User {
-        return this.user;
+    async getUser(): Promise<types.User> {
+        return await database.getUser(this.userId);
     }
 
     /**
@@ -188,15 +195,18 @@ export class Client {
      * @param track The track to add.
      */
     async addRecentlyPlayed(track: Track): Promise<void> {
+        // Get the user from the database.
+        const user = await this.getUser();
+
         // Pull the list of recently played tracks.
-        const recentlyPlayed = this.user.recentlyPlayed || [];
+        const recentlyPlayed = user.recentlyPlayed || [];
         // Add the track to the list.
         recentlyPlayed.unshift(track);
         // Update the user's recently played tracks.
-        this.user.recentlyPlayed = recentlyPlayed.slice(0, 9);
+        user.recentlyPlayed = recentlyPlayed.slice(0, 9);
 
         // Save the user.
-        await database.updateUser(this.user);
+        await database.updateUser(user);
     }
 
     /**
@@ -233,7 +243,7 @@ export class Client {
             // Check if the user was found.
             if (user) {
                 // Set the user.
-                this.user = user;
+                this.userId = user.userId;
                 // Log a message to the console.
                 logger.debug(`Client ${this.getId()} initialized as ${user.userId}.`);
 
@@ -303,6 +313,6 @@ export class Client {
         logger.debug("Client disconnected.");
         // Remove the client from the collections.
         delete clients[this.getId()];
-        if (this.user) delete users[this.user.userId];
+        if (this.userId) delete users[this.userId];
     }
 }
