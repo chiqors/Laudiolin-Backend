@@ -13,6 +13,7 @@ export default function (client: Client, data: VolumeMessage) {
     // Send volume to client.
     data.send_back &&
         client.send(<VolumeMessage>{
+            type: "volume",
             volume: data.volume
         });
 }
