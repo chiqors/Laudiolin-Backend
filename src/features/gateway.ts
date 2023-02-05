@@ -200,13 +200,24 @@ export class Client {
 
         // Pull the list of recently played tracks.
         const recentlyPlayed = user.recentlyPlayed || [];
-        // Add the track to the list.
+        // Check if the track is already in the list.
+        const index = recentlyPlayed.findIndex(t => t.id == track.id);
+        if (index != -1)
+            // Remove the track from the list.
+            recentlyPlayed.splice(index, 1);
+        // Add the track to the start of the list.
         recentlyPlayed.unshift(track);
+
         // Update the user's recently played tracks.
         user.recentlyPlayed = recentlyPlayed.slice(0, 9);
 
         // Save the user.
         await database.updateUser(user);
+        // Send the recently played list.
+        this.send(<types.RecentsMessage> {
+            type: "recents",
+            recents: user.recentlyPlayed
+        });
     }
 
     /**

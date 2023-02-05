@@ -118,6 +118,11 @@ export type SyncMessage = BaseGatewayMessage & {
     track: Track | null;
     progress: number;
 };
+// To client.
+export type RecentsMessage = BaseGatewayMessage & {
+    type: "recents";
+    recents: Track[];
+};
 
 export type BaseGatewayMessage = {
     type: string;
