@@ -23,7 +23,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.1",
     "express-ws": "^5.0.2",
-    "youtubei.js": "^2.6.0",
+    "youtubei.js": "^2.9.0",
     "spotify-web-api-node": "^5.0.2",
 
     "node-fetch": "^2.6.7",
