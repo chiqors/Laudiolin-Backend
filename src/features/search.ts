@@ -100,6 +100,43 @@ async function fetchTrack(req: Request, rsp: Response): Promise<void> {
     rsp.status(301).send(result);
 }
 
+/**
+ * Reverses a track by ID.
+ * @param req The HTTP request.
+ * @param rsp The new response.
+ */
+async function reverseTrack(req: Request, rsp: Response): Promise<void> {
+    // Pull arguments.
+    const id: string = req.params.id;
+    let engine: string = <string> req.query.query || "";
+
+    // Check if the arguments are valid.
+    if (id == null) {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Identify engine.
+    if (engine == "") {
+        engine = identifyId(id);
+    }
+
+    // Fetch the track.
+    let result = null;
+    switch (engine) {
+        case "Spotify":
+            result = await spotify.spotifyId(id);
+            break;
+    }
+
+    // Check if the result is empty.
+    if (result == null) {
+        rsp.status(404).send(constants.NO_RESULTS());
+    } else {
+        rsp.status(301).send(constants.SUCCESS({ id: result }));
+    }
+}
+
 /* -------------------------------------------------- */
 
 /* Create a router. */
@@ -108,6 +145,7 @@ const app: Router = Router();
 /* Configure routes. */
 app.get("/search/:query", searchFor);
 app.get("/fetch/:id", fetchTrack);
+app.get("/reverse/:id", reverseTrack);
 
 /* Export the router. */
 export default app;

@@ -35,7 +35,6 @@ async function handle(req: Request, rsp: Response): Promise<void> {
         case "cart": // Google cover art.
             response = await fetch(`${googleUrl}/${url}`);
             buffer = await response.blob();
-            rsp.status(200).send(await toBuffer(buffer));
             break;
         case "spot": // Spotify cover art.
             response = await fetch(`${spotifyUrl}/${url}`);

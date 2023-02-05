@@ -82,6 +82,21 @@ export async function searchIsrc(isrc: string): Promise<SearchResult> {
 }
 
 /**
+ * Performs a reverse Spotify search.
+ * @param isrc The ISRC to search for.
+ */
+export async function spotifyId(isrc: string): Promise<string> {
+    // Check if the ID is an ISRC.
+    if (isrc.length != 12) return isrc;
+
+    const search = await spotify.searchTracks(`isrc:${isrc}`);
+    const items = search.body.tracks.items;
+
+    if (items.length == 0) return null;
+    return items[0].id;
+}
+
+/**
  * Creates a playlist from a Spotify playlist.
  * @param url The playlist URL.
  */

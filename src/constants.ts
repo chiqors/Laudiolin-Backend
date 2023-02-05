@@ -132,8 +132,8 @@ export default {
     },
 
     /* Successful. */
-    SUCCESS: () => {
-        return { timestamp: Date.now(), code: 200, message: "Success." };
+    SUCCESS: (extra: any = {}) => {
+        return { ...extra, timestamp: Date.now(), code: 200, message: "Success." };
     },
     /* No search results. */
     NO_RESULTS: () => {
