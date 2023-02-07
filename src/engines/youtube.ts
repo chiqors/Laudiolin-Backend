@@ -2,16 +2,16 @@ import { logger } from "app/index";
 import constants from "app/constants";
 import { Innertube } from "youtubei.js";
 
-import { existsSync, createWriteStream, createReadStream } from "node:fs";
+import { existsSync, createWriteStream, createReadStream, rmSync } from "node:fs";
 import { streamToIterable } from "youtubei.js/dist/src/utils/Utils";
 
-import Music from "youtubei.js/dist/src/core/Music";
-
 import { SearchResults, SearchResult, Playlist } from "app/types";
+import Music from "youtubei.js/dist/src/core/Music";
+import Video from "youtubei.js/dist/src/parser/classes/Video";
 import PlaylistVideo from "youtubei.js/dist/src/parser/classes/PlaylistVideo";
 
 import * as utils from "app/utils";
-import Video from "youtubei.js/dist/src/parser/classes/Video";
+import ffmpeg from "fluent-ffmpeg";
 
 let youtube: Innertube | null = null;
 let music: Music | null = null;
@@ -113,16 +113,38 @@ export async function download(url: string): Promise<string> {
         format: "any"
     });
 
-    const file = createWriteStream(filePath);
-    for await (const chunk of streamToIterable(stream)) file.write(chunk);
+    // Write the stream to a temporary file.
+    const temporary = `${filePath}.tmp`;
+    const fileStream = createWriteStream(temporary);
+    for await (const chunk of streamToIterable(stream)) fileStream.write(chunk);
+    fileStream.end();
+
+    // Convert the data with ffmpeg and pipe to the file.
+    const promise = new Promise<string>((resolve, reject) => {
+        ffmpeg(temporary)
+            .on("end", () => {
+                resolve(filePath);
+
+                // Delete the temporary file.
+                rmSync(temporary, { force: true });
+            })
+            .on("error", err => {
+                reject(err); console.error("Error: ", err);
+            })
+            .audioBitrate(128)
+            .audioFrequency(44100)
+            .audioChannels(2)
+            .save(filePath)
+    });
 
     // Return the path to the file.
-    return filePath;
+    await promise; return filePath;
 }
 
 /**
  * Streams the specified video.
  * Pipes the data to the response.
+ * This does not support MP3 conversion.
  * @param url The URL of the video to stream.
  * @param pipe The response to pipe the data to.
  */
