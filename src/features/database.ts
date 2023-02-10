@@ -47,6 +47,8 @@ export const UserSchema = new Schema({
     recentlyPlayed: Array, // List of track objects.
 
     accessToken: String, // The user's client access token.
+    authCode: String, // The user's active authorization code.
+    codeExpires: String, // The timestamp of the code expiry.
 
     username: String, // Discord username.
     discriminator: String, // Discord discriminator.
@@ -149,6 +151,17 @@ export async function getUserByToken(token: string): Promise<User | null> {
 }
 
 /**
+ * Gets a user from the database.
+ * @param code The user's auth code.
+ * @return The user, or null if not found.
+ */
+export async function getUserByAuthCode(code: string): Promise<User | null> {
+    const result = UserModel.findOne({ authCode: code });
+    const user = await result.exec();
+    return user ? user.toObject() : null;
+}
+
+/**
  * Generates a random 32 character string.
  * This string cannot overlap with any other tokens.
  * @param userId The user's ID.
@@ -188,4 +201,18 @@ export async function generatePlaylistId(): Promise<string> {
     }
 
     return id;
+}
+
+/**
+ * Generates a 6 digit auth code.
+ * @param userId The user's ID.
+ */
+export async function generateAuthCode(userId: string | null = null): Promise<string> {
+    // Generate a random string.
+    const code = randomString(6, "0123456789");
+    // Save the code & expiry timestamp.
+    if (userId) await UserModel.updateOne({ userId },
+        { authCode: code, codeExpires: Date.now() + 60e3 }).exec();
+
+    return code;
 }

@@ -43,6 +43,8 @@ export type User = {
     recentlyPlayed?: Track[];
 
     accessToken?: string;
+    authCode?: string;
+    codeExpires?: string;
 
     username?: string;
     discriminator?: string;

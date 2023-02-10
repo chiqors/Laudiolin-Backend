@@ -76,10 +76,11 @@ export function getToken(req: Request): string | null {
 /**
  * Generates a random string of the specified length.
  * @param length The length of the string.
+ * @param charset The characters to use.
  * @return The random string.
  */
-export function randomString(length: number): string {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+export function randomString(length: number, charset: string = null): string {
+    const characters = charset ?? "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
     for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * characters.length));

@@ -58,6 +58,74 @@ async function fetch(req: Request, rsp: Response): Promise<void> {
 }
 
 /**
+ * Generates an authorization code.
+ * @param req The HTTP request.
+ * @param rsp The new response.
+ */
+async function auth(req: Request, rsp: Response): Promise<void> {
+    if (req.method == "GET") {
+        // Check for authorization.
+        const token = getToken(req);
+
+        // Check if the token is missing.
+        if (token == null) {
+            rsp.status(401).send(constants.NO_AUTHORIZATION());
+            return;
+        }
+
+        // Get the user from the database.
+        const user = await database.getUserByToken(token);
+        // Check if the user is empty.
+        if (user == null) {
+            rsp.status(400).send(constants.INVALID_TOKEN());
+            return;
+        }
+
+        // Generate the authorization code.
+        const code = await database.generateAuthCode(user.userId);
+        // Check if the code is empty.
+        if (code == null) {
+            rsp.status(500).send(constants.INTERNAL_ERROR());
+            return;
+        }
+
+        // Send the code.
+        rsp.status(200).send(constants.SUCCESS({ authCode: code }));
+    } else {
+        // Get the auth code.
+        const { code } = req.body;
+
+        // Check if the code is missing.
+        if (code == null) {
+            rsp.status(400).send(constants.INVALID_ARGUMENTS());
+            return;
+        }
+
+        // Get the user from the database.
+        const user = await database.getUserByAuthCode(code);
+        // Check if the user is empty.
+        if (user == null) {
+            rsp.status(400).send(constants.INVALID_TOKEN());
+            return;
+        }
+
+        // Check if the auth code has expired.
+        if (parseInt(user.codeExpires) < Date.now()) {
+            rsp.status(400).send(constants.INVALID_TOKEN());
+            return;
+        }
+
+        // Remove the auth code from the database.
+        user.authCode = null;
+        user.codeExpires = null;
+        await database.updateUser(user);
+
+        // Respond with the user's token.
+        rsp.status(200).send(constants.SUCCESS({ token: user.accessToken }));
+    }
+}
+
+/**
  * Modifies a user's favorite tracks.
  * @param req The HTTP request.
  * @param rsp The new response.
@@ -118,8 +186,10 @@ const app: Router = Router();
 
 /* Configure routes. */
 app.get("/user", fetch);
-app.get("/user/:id", fetch);
+app.get("/user/auth", auth);
+app.post("/user/auth", auth);
 app.post("/user/favorite", favorite);
+app.get("/user/:id", fetch);
 
 /* Export the router. */
 export default app;

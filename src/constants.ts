@@ -150,5 +150,9 @@ export default {
     /* No authorization. */
     NO_AUTHORIZATION: () => {
         return { timestamp: Date.now(), code: 403, message: "No authorization provided." };
+    },
+    /* Unhandled exception. */
+    INTERNAL_ERROR: () => {
+        return { timestamp: Date.now(), code: 500, message: "Internal server error." }
     }
 };
