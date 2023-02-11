@@ -94,6 +94,7 @@ export type NowPlayingMessage = BaseGatewayMessage & {
     type: "playing";
     track: Track | null;
     seek: number;
+    sync?: boolean;
 };
 /**
  * From client.

@@ -23,9 +23,12 @@ export default async function (client: Client, data: NowPlayingMessage) {
     // Set the progress.
     client.progress = seek;
 
-    // Update listening to clients.
-    for (const id in client.listeningAlong) {
-        client.listeningAlong[id]?.syncWith();
+    // Check if the client should sync.
+    if (data.sync) {
+        // Update listening to clients.
+        for (const id in client.listeningAlong) {
+            client.listeningAlong[id]?.syncWith();
+        }
     }
 
     // Set user's online status.
