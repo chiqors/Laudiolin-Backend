@@ -20,7 +20,7 @@ export default function (client: Client, data: DiscordLoadUsersMessage) {
     Object.keys(users).forEach((userId) => {
         const gatewayUser = users[userId][0];
         const discordUser = discordUsers.find(u => u.userId == userId);
-        gatewayUser && onlineUsers.push({
+        gatewayUser && (onlineUsers[userId] = {
             ...discordUser,
             listeningTo: gatewayUser.listeningTo,
             progress: gatewayUser.progress

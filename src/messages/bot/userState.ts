@@ -22,17 +22,16 @@ export default function (client: Client, data: DiscordUserUpdateMessage) {
         availableUsers.push(user);
 
         // Check if the user is listening to Laudiolin.
-        let gatewayUser; if ((gatewayUser = users[userId])) onlineUsers.push({
+        let gatewayUser = users[userId];
+        gatewayUser && (onlineUsers[userId] = {
             ...user,
-            listeningTo: gatewayUser.listeningTo,
-            progress: gatewayUser.progress
+            listeningTo: gatewayUser[0].listeningTo,
+            progress: gatewayUser[0].progress
         });
     } else if (state == "offline") {
         // Remove the user from the online users list.
         const aIndex = availableUsers.findIndex(u => u.userId == userId);
         (aIndex != -1) && availableUsers.splice(aIndex, 1);
-
-        const oIndex = onlineUsers.findIndex(u => u.userId == userId);
-        (oIndex != -1) && onlineUsers.splice(oIndex, 1);
+        delete onlineUsers[userId];
     }
 }

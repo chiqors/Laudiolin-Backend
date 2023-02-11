@@ -35,13 +35,19 @@ export default async function (client: Client, data: NowPlayingMessage) {
     const user = availableUsers.find(u => u.userId == client.getUserId());
     if (!user) return;
 
-    if (track && !onlineUsers.find(u => u.userId == client.getUserId())) {
-        onlineUsers.push({
+    if (track && !onlineUsers[client.getUserId()]) {
+        // Set the online user's data.
+        onlineUsers[client.getUserId()] = {
             ...user,
             listeningTo: track,
             progress: seek
-        });
-    } else if (!track && onlineUsers.find(u => u.userId == client.getUserId())) {
-        onlineUsers.splice(onlineUsers.findIndex(u => u.userId == client.getUserId()), 1);
+        };
+    } else if (!track && onlineUsers[client.getUserId()]) {
+        // Remove the user as they aren't listening.
+        delete onlineUsers[client.getUserId()];
+    } else {
+        // Update the user's progress & track.
+        onlineUsers[client.getUserId()].listeningTo = track;
+        onlineUsers[client.getUserId()].progress = seek;
     }
 }
