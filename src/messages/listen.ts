@@ -22,7 +22,10 @@ export default function (client: Client, data: ListenMessage) {
         // Check if the user exists.
         if (!user) return;
 
+        // Check if the user is listening to something.
+        if (!user[0].listeningTo) return;
+
         // Listen along.
-        client.listenAlong(user);
+        client.listenAlong(user[0]);
     }
 }

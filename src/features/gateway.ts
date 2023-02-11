@@ -15,7 +15,7 @@ import { isJson } from "app/utils";
 import { randomUUID } from "crypto";
 
 const clients: { [key: string]: Client } = {};
-const users: { [key: string]: Client } = {};
+const users: { [key: string]: Client[] } = {};
 
 /**
  * Handles a new websocket connection.
@@ -31,6 +31,22 @@ function handleConnection(ws: WebSocket, incMsg: IncomingMessage): void {
     // Add event handlers.
     ws.on("message", client.handleMessage.bind(client));
     ws.on("close", client.handleClose.bind(client));
+}
+
+/**
+ * Broadcasts a message to all clients.
+ * @param userId The user ID to broadcast to.
+ * @param payload The payload to send.
+ */
+function broadcast(userId: string, payload: GatewayMessage): void {
+    // Get the clients.
+    const clients = users[userId];
+    if (!clients) return;
+
+    // Send the message to each client.
+    for (const client of clients) {
+        client.send(payload);
+    }
 }
 
 /* A collection of message handlers. */
@@ -55,7 +71,7 @@ export default function (socket: WebSocket, incMsg: IncomingMessage): void {
  * Tries to get a client in the gateway by the user ID.
  * @param userId The user ID to search for.
  */
-export function getUserById(userId: string): Client | null {
+export function getUserById(userId: string): Client[] | null {
     return users[userId] || null;
 }
 
@@ -214,7 +230,7 @@ export class Client {
         // Save the user.
         await database.updateUser(user);
         // Send the recently played list.
-        this.send(<types.RecentsMessage> {
+        broadcast(this.userId, <types.RecentsMessage> {
             type: "recents",
             recents: user.recentlyPlayed
         });
@@ -259,7 +275,9 @@ export class Client {
                 logger.debug(`Client ${this.getId()} initialized as ${user.userId}.`);
 
                 // Update the users list.
-                users[user.userId] = this;
+                if (!users[user.userId])
+                    users[user.userId] = [];
+                users[user.userId].push(this);
             }
         }, 1000);
 
@@ -324,6 +342,13 @@ export class Client {
         logger.debug("Client disconnected.");
         // Remove the client from the collections.
         delete clients[this.getId()];
-        if (this.userId) delete users[this.userId];
+        if (this.userId) {
+            if (users[this.userId].length < 2)
+                delete users[this.userId];
+            else
+                users[this.userId]
+                    .splice(users[this.userId]
+                        .indexOf(this), 1);
+        }
     }
 }
