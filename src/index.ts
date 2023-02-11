@@ -41,6 +41,7 @@ app.use(require("./features/user").default);
 app.use(require("./features/proxy").default);
 app.use(require("./features/search").default);
 app.use(require("./features/stream").default);
+app.use(require("./features/social").default);
 app.use(require("./features/discord").default);
 app.use(require("./features/playlist").default);
 /* Configure websocket features. */

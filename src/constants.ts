@@ -54,6 +54,8 @@ export default {
     DISCORD_TOKEN_EXCHANGE: "https://discord.com/api/v10/oauth2/token",
     /* Discord user info URL. */
     DISCORD_USER_INFO: "https://discord.com/api/v10/users/@me",
+    /* Discord bot gateway token. */
+    DISCORD_TOKEN: $("DISCORD_TOKEN", ""),
 
     /* HTTP proxy list path. */
     HTTP_PROXIES: process.env["HTTP_PROXIES"] || `${process.cwd()}/proxies.txt`,

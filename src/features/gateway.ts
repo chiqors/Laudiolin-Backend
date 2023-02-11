@@ -7,15 +7,16 @@ import constants from "app/constants";
 import { logger } from "app/index";
 import { WebSocket } from "ws";
 import { IncomingMessage } from "http";
-import { GatewayMessage, Track } from "app/types";
+import { GatewayMessage, InitializeMessage, Track } from "app/types";
 import * as types from "app/types";
 import * as database from "features/database";
 
 import { isJson } from "app/utils";
 import { randomUUID } from "crypto";
 
+let hasBot: boolean = false;
 const clients: { [key: string]: Client } = {};
-const users: { [key: string]: Client[] } = {};
+export const users: { [key: string]: Client[] } = {};
 
 /**
  * Handles a new websocket connection.
@@ -59,6 +60,11 @@ const handlers = {
     volume: require("messages/volume"),
     /* Listen along. (client) */
     listen: require("messages/listen"),
+
+    /* Load users. (bot) */
+    "load-users": require("messages/bot/userLoad"),
+    /* Update user. (bot) */
+    "user-update": require("messages/bot/userState"),
 };
 
 /* Create a connection handler. */
@@ -126,6 +132,13 @@ export class Client {
      */
     getId(): string {
         return this.socket["id"];
+    }
+
+    /**
+     * Returns the client's user's ID.
+     */
+    getUserId(): string | null {
+        return this.userId;
     }
 
     /**
@@ -262,24 +275,37 @@ export class Client {
         // Ping the client.
         this.ping();
 
-        setTimeout(async () => {
-            // Attempt to find the user.
-            const token = (data as types.InitializeMessage).token;
-            const user = await database.getUserByToken(token);
-
-            // Check if the user was found.
-            if (user) {
-                // Set the user.
-                this.userId = user.userId;
+        // Check if the message is from a bot.
+        const { token } = data as InitializeMessage;
+        if (!hasBot && token == constants.DISCORD_TOKEN) {
+            setTimeout(async () => {
+                // Set the user as the bot.
+                this.userId = "bot"; hasBot = true;
                 // Log a message to the console.
-                logger.debug(`Client ${this.getId()} initialized as ${user.userId}.`);
+                logger.debug(`Client ${this.getId()} initialized as bot.`);
 
-                // Update the users list.
-                if (!users[user.userId])
-                    users[user.userId] = [];
-                users[user.userId].push(this);
-            }
-        }, 1000);
+                // Fetch for online members.
+                this.send(constants.SUCCESS({ type: "fetch" }));
+            }, 1000);
+        } else {
+            setTimeout(async () => {
+                // Attempt to find the user.
+                const user = await database.getUserByToken(token);
+
+                // Check if the user was found.
+                if (user) {
+                    // Set the user.
+                    this.userId = user.userId;
+                    // Log a message to the console.
+                    logger.debug(`Client ${this.getId()} initialized as ${user.userId}.`);
+
+                    // Update the users list.
+                    if (!users[user.userId])
+                        users[user.userId] = [];
+                    users[user.userId].push(this);
+                }
+            }, 1000);
+        }
 
         return true;
     }
@@ -342,7 +368,7 @@ export class Client {
         logger.debug("Client disconnected.");
         // Remove the client from the collections.
         delete clients[this.getId()];
-        if (this.userId) {
+        if (this.userId && users[this.userId]) {
             if (users[this.userId].length < 2)
                 delete users[this.userId];
             else

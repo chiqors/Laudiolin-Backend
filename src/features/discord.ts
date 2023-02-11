@@ -1,10 +1,11 @@
 /* Imports. */
+import type { User } from "app/types";
+
 import constants from "app/constants";
 import { Request, Response, Router } from "express";
 
 import * as database from "features/database";
 import { defaultObject } from "app/utils";
-import { User } from "app/types";
 
 /**
  * Redirects the user to the configured OAuth2 URL.

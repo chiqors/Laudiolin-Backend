@@ -31,13 +31,25 @@ export type Playlist = {
  * User/Authentication.
  */
 
+export type BasicUser = {
+    username?: string;
+    discriminator?: string;
+    userId?: string;
+    avatar?: string;
+};
+
+export type OnlineUser = BasicUser & {
+    listeningTo?: Track;
+    progress?: number;
+};
+
 /**
  * @param accessToken The user's client access token.
  * @param refresh The user's refresh token.
  * @param scope Any OAuth2 scopes.
  * @param type The authentication token type.
  */
-export type User = {
+export type User = BasicUser & {
     playlists?: string[];
     likedSongs?: Track[];
     recentlyPlayed?: Track[];
@@ -45,11 +57,6 @@ export type User = {
     accessToken?: string;
     authCode?: string;
     codeExpires?: string;
-
-    username?: string;
-    discriminator?: string;
-    userId?: string;
-    avatar?: string;
 
     scope?: string;
     refresh?: string;
@@ -124,6 +131,18 @@ export type SyncMessage = BaseGatewayMessage & {
 export type RecentsMessage = BaseGatewayMessage & {
     type: "recents";
     recents: Track[];
+};
+
+// From Discord bot.
+export type DiscordLoadUsersMessage = BaseGatewayMessage & {
+    type: "load-users";
+    users: BasicUser[];
+}
+// From Discord bot.
+export type DiscordUserUpdateMessage = BaseGatewayMessage & {
+    type: "user-update";
+    user: BasicUser;
+    state: "online" | "offline";
 };
 
 export type BaseGatewayMessage = {
