@@ -90,6 +90,12 @@ export type LatencyMessage = BaseGatewayMessage & {
     type: "latency";
 };
 // From client.
+export type UpdatePlayerMessage = BaseGatewayMessage & {
+    type: "update-player";
+    paused: boolean;
+    progress: number;
+};
+// From client.
 export type NowPlayingMessage = BaseGatewayMessage & {
     type: "playing";
     track: Track | null;
@@ -127,6 +133,7 @@ export type SyncMessage = BaseGatewayMessage & {
     type: "sync";
     track: Track | null;
     progress: number;
+    paused: boolean;
 };
 // To client.
 export type RecentsMessage = BaseGatewayMessage & {

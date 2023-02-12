@@ -60,6 +60,8 @@ const handlers = {
     volume: require("messages/volume"),
     /* Listen along. (client) */
     listen: require("messages/listen"),
+    /* Update player state. (client) */
+    "update-player": require("messages/player"),
 
     /* Load users. (bot) */
     "load-users": require("messages/bot/userLoad"),
@@ -88,6 +90,7 @@ export class Client {
 
     /* Player information. */
     listeningTo: Track | null = null;
+    paused: boolean = true;
     progress: number = 0;
     volume: number = 1.0;
 
@@ -190,7 +193,8 @@ export class Client {
         this.send(<types.SyncMessage> {
             type: "sync",
             track: this.listeningWith.listeningTo,
-            progress: this.listeningWith.progress
+            progress: this.listeningWith.progress,
+            paused: this.listeningWith.paused,
         });
     }
 
