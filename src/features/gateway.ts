@@ -148,20 +148,6 @@ export class Client {
         return this.userId;
     }
 
-    /**
-     * Returns the client that this client is listening with.
-     */
-    getListeningWith(): Client | null {
-        return this.listeningWith;
-    }
-
-    /**
-     * Returns the social status of the user.
-     */
-    getSocialStatus(): SocialStatus {
-        return this.socialStatus;
-    }
-
     /*
      * Social utilities.
      */
@@ -282,7 +268,7 @@ export class Client {
     async asOnlineUser(user?: User): Promise<OnlineUser> {
         user = user ?? await this.getUser();
         return {
-            socialStatus: this.getSocialStatus(),
+            socialStatus: this.socialStatus,
             username: user.username,
             discriminator: user.discriminator,
             userId: user.userId,
@@ -298,7 +284,7 @@ export class Client {
     async asOfflineUser(user?: User): Promise<OfflineUser> {
         user = user ?? await this.getUser();
         return {
-            socialStatus: this.getSocialStatus(),
+            socialStatus: this.socialStatus,
             username: user.username,
             discriminator: user.discriminator,
             userId: user.userId,
@@ -363,13 +349,13 @@ export class Client {
                         users[user.userId] = [];
                     users[user.userId].push(this);
 
+                    // Set the user's social status.
+                    this.socialStatus = broadcast ?? "Everyone";
+
                     // Remove the user from the list of recent users.
                     recentUsers[user.userId] && (delete recentUsers[user.userId]);
                     // Add the user to the collection of online users.
                     onlineUsers[user.userId] = await this.asOnlineUser(user);
-
-                    // Set the user's social status.
-                    this.socialStatus = broadcast ?? "Everyone";
                 }
             }, 1000);
         }
