@@ -60,8 +60,6 @@ const handlers = {
     volume: require("messages/volume"),
     /* Listen along. (client) */
     listen: require("messages/listen"),
-    /* Update player state. (client) */
-    "update-player": require("messages/player"),
 
     /* Load users. (bot) */
     "load-users": require("messages/bot/userLoad"),

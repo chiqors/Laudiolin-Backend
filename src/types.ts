@@ -90,17 +90,12 @@ export type LatencyMessage = BaseGatewayMessage & {
     type: "latency";
 };
 // From client.
-export type UpdatePlayerMessage = BaseGatewayMessage & {
-    type: "update-player";
-    paused: boolean;
-    progress: number;
-};
-// From client.
 export type NowPlayingMessage = BaseGatewayMessage & {
     type: "playing";
     track: Track | null;
     seek: number;
     sync?: boolean;
+    paused?: boolean;
 };
 /**
  * From client.
