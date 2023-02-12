@@ -14,8 +14,10 @@ import { onlineUsers, recentUsers } from "features/social";
 import { isJson } from "app/utils";
 import { randomUUID } from "crypto";
 
-import type { GatewayMessage, InitializeMessage,
-    OnlineUser, Track, User} from "app/types";
+import type {
+    GatewayMessage, InitializeMessage, OfflineUser,
+    OnlineUser, Track, User
+} from "app/types";
 
 let hasBot: boolean = false;
 const clients: { [key: string]: Client } = {};
@@ -281,6 +283,21 @@ export class Client {
     }
 
     /**
+     * Converts this user into an offline user.
+     */
+    async asOfflineUser(user?: User): Promise<OfflineUser> {
+        user = user ?? await this.getUser();
+        return {
+            username: user.username,
+            discriminator: user.discriminator,
+            userId: user.userId,
+            avatar: user.avatar,
+            lastSeen: Date.now(),
+            lastListeningTo: this.listeningTo
+        };
+    }
+
+    /**
      * Pings the client.
      */
     ping(): void {
@@ -418,7 +435,7 @@ export class Client {
             // Add the user to a list of recent users.
             if (!recentUsers[this.userId] && this.listeningTo) {
                 recentUsers[this.userId] = {
-                    ...(await this.getUser()),
+                    ...await this.asOfflineUser(),
                     lastSeen: Date.now(),
                     lastListeningTo: this.listeningTo
                 };
