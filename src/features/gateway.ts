@@ -369,7 +369,7 @@ export class Client {
                     onlineUsers[user.userId] = await this.asOnlineUser(user);
 
                     // Set the user's social status.
-                    this.socialStatus = broadcast;
+                    this.socialStatus = broadcast ?? "Everyone";
                 }
             }, 1000);
         }
