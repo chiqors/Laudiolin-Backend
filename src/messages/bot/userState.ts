@@ -25,6 +25,7 @@ export default function (client: Client, data: DiscordUserUpdateMessage) {
         let gatewayUser = users[userId];
         gatewayUser && (onlineUsers[userId] = {
             ...user,
+            socialStatus: gatewayUser[0].socialStatus,
             listeningTo: gatewayUser[0].listeningTo,
             progress: gatewayUser[0].progress
         });
