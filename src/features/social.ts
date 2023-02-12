@@ -27,7 +27,7 @@ async function available(req: Request, rsp: Response): Promise<void> {
     }
 
     // Filter out users which are not public.
-    users = users.filter(user => user.socialStatus != "Nobody");
+    users = users.filter(user => user.socialStatus == "Nobody");
 
     // Send the users.
     rsp.status(200).send(constants.SUCCESS({ onlineUsers: users }));
@@ -42,10 +42,10 @@ async function recent(req: Request, rsp: Response): Promise<void> {
     // Get the offline users.
     let users = Object.values(recentUsers);
     // Filter out users which are not public.
-    users = users.filter(user => user.socialStatus != "Nobody");
+    users = users.filter(user => user.socialStatus == "Nobody");
 
     // Send the users.
-    rsp.status(200).send(constants.SUCCESS({ users }));
+    rsp.status(200).send(constants.SUCCESS({ recentUsers: users }));
 }
 
 /* -------------------------------------------------- */
