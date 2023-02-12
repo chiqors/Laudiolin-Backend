@@ -69,13 +69,6 @@ async function stream(req: Request, rsp: Response): Promise<void> {
         source = identifyId(id);
     }
 
-    // Set the response headers.
-    rsp.set({
-        Connection: "keep-alive",
-        "Content-Type": "audio/mpeg",
-        "Transfer-Encoding": "chunked"
-    });
-
     // Download the video.
     switch (source) {
         case "YouTube":
@@ -86,8 +79,43 @@ async function stream(req: Request, rsp: Response): Promise<void> {
             break;
     }
 
+    // Send a status response.
+    // rsp.status(400).send(constants.INTERNAL_ERROR());
+}
+
+/**
+ * Caches a track by ID.
+ * @param req The HTTP request.
+ * @param rsp The new response.
+ */
+async function cache(req: Request, rsp: Response): Promise<void> {
+    // Pull arguments.
+    const id: string = <string>req.query.id || "";
+    let source: string = <string>req.query.engine || "";
+
+    // Validate arguments.
+    if (id == "") {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Identify source.
+    if (source == "") {
+        source = identifyId(id);
+    }
+
+    // Download the video.
+    switch (source) {
+        case "YouTube":
+            await youtube.download(id);
+            break;
+        case "Spotify":
+            await spotify.download(id);
+            break;
+    }
+
     // Send a response if unable to stream.
-    // rsp.status(400).send(constants.INVALID_ARGUMENTS());
+    rsp.status(200).send(constants.SUCCESS());
 }
 
 /* -------------------------------------------------- */
@@ -98,6 +126,7 @@ const app: Router = Router();
 /* Configure routes. */
 app.get("/download", download);
 app.get("/stream", stream);
+app.get("/cache", cache);
 
 /* Export the router. */
 export default app;

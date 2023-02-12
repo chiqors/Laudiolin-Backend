@@ -9,7 +9,7 @@ import { availableUsers, onlineUsers } from "features/social";
  * @param data The playing message received.
  */
 export default async function (client: Client, data: NowPlayingMessage) {
-    const { track, seek } = data;
+    const { track, seek, sync } = data;
 
     // Check if the current track is different to the one sent.
     if (client.isLoggedIn() && track &&
@@ -24,7 +24,7 @@ export default async function (client: Client, data: NowPlayingMessage) {
     client.progress = seek;
 
     // Check if the client should sync.
-    if (data.sync) {
+    if (sync) {
         // Update listening to clients.
         for (const id in client.listeningAlong) {
             client.listeningAlong[id]?.syncWith();
