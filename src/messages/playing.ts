@@ -34,11 +34,7 @@ export default async function (client: Client, data: NowPlayingMessage) {
     // Set the user's online status.
     if (track && !onlineUsers[client.getUserId()]) {
         // Set the online user's data.
-        onlineUsers[client.getUserId()] = {
-            ...(await client.getUser()),
-            listeningTo: track,
-            progress: seek
-        };
+        onlineUsers[client.getUserId()] = await client.asOnlineUser();
     } else {
         // Update the user's progress & track.
         onlineUsers[client.getUserId()].listeningTo = track;

@@ -17,11 +17,10 @@ export default function (client: Client, data: DiscordLoadUsersMessage) {
     availableUsers.push(...discordUsers); // Add the users to the online users list.
 
     // Load all Laudiolin-online users.
-    Object.keys(users).forEach((userId) => {
+    Object.keys(users).forEach(async (userId) => {
         const gatewayUser = users[userId][0];
-        const discordUser = discordUsers.find(u => u.userId == userId);
         gatewayUser && (onlineUsers[userId] = {
-            ...discordUser,
+            ...await gatewayUser.asOnlineUser(),
             listeningTo: gatewayUser.listeningTo,
             progress: gatewayUser.progress
         });

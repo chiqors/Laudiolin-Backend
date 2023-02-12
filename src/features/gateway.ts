@@ -269,8 +269,12 @@ export class Client {
      * Converts this user into an online user.
      */
     async asOnlineUser(user?: User): Promise<OnlineUser> {
+        user = user ?? await this.getUser();
         return {
-            ...(user ?? await this.getUser()),
+            username: user.username,
+            discriminator: user.discriminator,
+            userId: user.userId,
+            avatar: user.avatar,
             progress: this.progress,
             listeningTo: this.listeningTo
         };
