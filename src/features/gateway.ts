@@ -441,6 +441,9 @@ export class Client {
                 };
             }
 
+            // Remove the user from online users.
+            onlineUsers[this.userId] && delete onlineUsers[this.userId];
+
             // Remove the user from the 'users' collection.
             if (users[this.userId].length < 2)
                 delete users[this.userId];
