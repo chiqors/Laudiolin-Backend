@@ -43,6 +43,11 @@ export type OnlineUser = BasicUser & {
     progress?: number;
 };
 
+export type OfflineUser = BasicUser & {
+    lastSeen: number;
+    lastListeningTo: Track;
+};
+
 /**
  * @param accessToken The user's client access token.
  * @param refresh The user's refresh token.

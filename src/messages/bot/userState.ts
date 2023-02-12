@@ -2,7 +2,7 @@
 import { Client, users } from "features/gateway";
 import { DiscordUserUpdateMessage } from "app/types";
 
-import { availableUsers, onlineUsers, recentUsers } from "features/social";
+import { availableUsers, onlineUsers } from "features/social";
 
 /**
  * Handles the user update message received.
@@ -33,8 +33,5 @@ export default function (client: Client, data: DiscordUserUpdateMessage) {
         const aIndex = availableUsers.findIndex(u => u.userId == userId);
         (aIndex != -1) && availableUsers.splice(aIndex, 1);
         delete onlineUsers[userId];
-
-        // Add the user to recent users list.
-        !recentUsers[userId] && (recentUsers[userId] = user);
     }
 }

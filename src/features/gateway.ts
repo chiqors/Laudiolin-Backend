@@ -7,12 +7,15 @@ import constants from "app/constants";
 import { logger } from "app/index";
 import { WebSocket } from "ws";
 import { IncomingMessage } from "http";
-import { GatewayMessage, InitializeMessage, Track } from "app/types";
 import * as types from "app/types";
 import * as database from "features/database";
+import { onlineUsers, recentUsers } from "features/social";
 
 import { isJson } from "app/utils";
 import { randomUUID } from "crypto";
+
+import type { GatewayMessage, InitializeMessage,
+    OnlineUser, Track, User} from "app/types";
 
 let hasBot: boolean = false;
 const clients: { [key: string]: Client } = {};
@@ -263,6 +266,17 @@ export class Client {
     }
 
     /**
+     * Converts this user into an online user.
+     */
+    async asOnlineUser(user?: User): Promise<OnlineUser> {
+        return {
+            ...(user ?? await this.getUser()),
+            progress: this.progress,
+            listeningTo: this.listeningTo
+        };
+    }
+
+    /**
      * Pings the client.
      */
     ping(): void {
@@ -316,6 +330,11 @@ export class Client {
                     if (!users[user.userId])
                         users[user.userId] = [];
                     users[user.userId].push(this);
+
+                    // Remove the user from the list of recent users.
+                    recentUsers[user.userId] && (delete recentUsers[user.userId]);
+                    // Add the user to the collection of online users.
+                    onlineUsers[user.userId] = await this.asOnlineUser(user);
                 }
             }, 1000);
         }
@@ -376,7 +395,7 @@ export class Client {
     /**
      * Handles the client disconnecting.
      */
-    handleClose(): void {
+    async handleClose(): Promise<void> {
         // Log a message to the console.
         logger.debug("Client disconnected.");
 
@@ -389,9 +408,19 @@ export class Client {
                 client => client.stopListeningAlong(true));
         }
 
-        // Remove the client from the collections.
+        // Remove the client from the 'clients' collection.
         delete clients[this.getId()];
         if (this.userId && users[this.userId]) {
+            // Add the user to a list of recent users.
+            if (!recentUsers[this.userId] && this.listeningTo) {
+                recentUsers[this.userId] = {
+                    ...(await this.getUser()),
+                    lastSeen: Date.now(),
+                    lastListeningTo: this.listeningTo
+                };
+            }
+
+            // Remove the user from the 'users' collection.
             if (users[this.userId].length < 2)
                 delete users[this.userId];
             else

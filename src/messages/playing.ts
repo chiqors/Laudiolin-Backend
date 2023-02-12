@@ -1,7 +1,7 @@
 /* Imports. */
 import { Client } from "features/gateway";
+import { onlineUsers } from "features/social";
 import { NowPlayingMessage } from "app/types";
-import { availableUsers, onlineUsers } from "features/social";
 
 /**
  * Handles the playing message received.
@@ -31,20 +31,14 @@ export default async function (client: Client, data: NowPlayingMessage) {
         }
     }
 
-    // Set user's online status.
-    const user = availableUsers.find(u => u.userId == client.getUserId());
-    if (!user) return;
-
+    // Set the user's online status.
     if (track && !onlineUsers[client.getUserId()]) {
         // Set the online user's data.
         onlineUsers[client.getUserId()] = {
-            ...user,
+            ...(await client.getUser()),
             listeningTo: track,
             progress: seek
         };
-    } else if (!track && onlineUsers[client.getUserId()]) {
-        // Remove the user as they aren't listening.
-        delete onlineUsers[client.getUserId()];
     } else {
         // Update the user's progress & track.
         onlineUsers[client.getUserId()].listeningTo = track;

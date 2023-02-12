@@ -2,11 +2,11 @@
 import {Request, Response, Router} from "express";
 import constants from "app/constants";
 
-import type { BasicUser, OnlineUser } from "app/types";
+import type { BasicUser, OfflineUser, OnlineUser } from "app/types";
 
 export let availableUsers: BasicUser[] = []; // Users which are online.
 export let onlineUsers: { [key: string]: OnlineUser } = {}; // Users which are actively using Laudiolin.
-export let recentUsers: { [key: string]: BasicUser } = {}; // Users which have been online recently.
+export let recentUsers: { [key: string]: OfflineUser } = {}; // Users which have been online recently.
 
 /* -------------------------------------------------- */
 
@@ -16,9 +16,18 @@ export let recentUsers: { [key: string]: BasicUser } = {}; // Users which have b
  * @param rsp The new response.
  */
 async function available(req: Request, rsp: Response): Promise<void> {
-    rsp.status(200).send(constants.SUCCESS({
-        onlineUsers: Object.values(onlineUsers)
-    }));
+    // Pull arguments.
+    const active = <string> req.query.active ?? "false";
+
+    // Get the online users.
+    let users = Object.values(onlineUsers);
+    // Check if the user wants to filter out inactive users.
+    if (active == "true") {
+        users = users.filter(user => user.listeningTo != null);
+    }
+
+    // Send the users.
+    rsp.status(200).send(constants.SUCCESS({ onlineUsers: users }));
 }
 
 /**
