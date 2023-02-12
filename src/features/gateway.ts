@@ -370,6 +370,10 @@ export class Client {
     handleClose(): void {
         // Log a message to the console.
         logger.debug("Client disconnected.");
+
+        // Remove the client from listening along states.
+        if (this.listeningWith) this.stopListeningAlong();
+
         // Remove the client from the collections.
         delete clients[this.getId()];
         if (this.userId && users[this.userId]) {
