@@ -21,10 +21,13 @@ async function available(req: Request, rsp: Response): Promise<void> {
 
     // Get the online users.
     let users = Object.values(onlineUsers);
-    // Check if the user wants to filter out inactive users.
+    // Check if the request wants to filter out inactive users.
     if (active == "true") {
         users = users.filter(user => user.listeningTo != null);
     }
+
+    // Filter out users which are not public.
+    users = users.filter(user => user.socialStatus != "Nobody");
 
     // Send the users.
     rsp.status(200).send(constants.SUCCESS({ onlineUsers: users }));
@@ -36,9 +39,13 @@ async function available(req: Request, rsp: Response): Promise<void> {
  * @param rsp The new response.
  */
 async function recent(req: Request, rsp: Response): Promise<void> {
-    rsp.status(200).send(constants.SUCCESS({
-        recentUsers: Object.values(recentUsers)
-    }));
+    // Get the offline users.
+    let users = Object.values(recentUsers);
+    // Filter out users which are not public.
+    users = users.filter(user => user.socialStatus != "Nobody");
+
+    // Send the users.
+    rsp.status(200).send(constants.SUCCESS({ users }));
 }
 
 /* -------------------------------------------------- */

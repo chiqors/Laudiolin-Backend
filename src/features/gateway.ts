@@ -16,7 +16,7 @@ import { randomUUID } from "crypto";
 
 import type {
     GatewayMessage, InitializeMessage, OfflineUser,
-    OnlineUser, Track, User
+    OnlineUser, SocialStatus, Track, User
 } from "app/types";
 
 let hasBot: boolean = false;
@@ -98,6 +98,7 @@ export class Client {
     volume: number = 1.0;
 
     /* Social information. */
+    socialStatus: SocialStatus = "Nobody";
     listeningAlong: { [key: string]: Client } = {};
     listeningWith: Client | null = null;
 
@@ -154,6 +155,13 @@ export class Client {
         return this.listeningWith;
     }
 
+    /**
+     * Returns the social status of the user.
+     */
+    getSocialStatus(): SocialStatus {
+        return this.socialStatus;
+    }
+
     /*
      * Social utilities.
      */
@@ -199,7 +207,7 @@ export class Client {
     /**
      * Syncs this client with the listening with client.
      */
-    syncWith(): void {
+    syncWith(seek: boolean = false): void {
         // Check if the client is listening with someone.
         if (!this.listeningWith) return;
 
@@ -209,6 +217,7 @@ export class Client {
             track: this.listeningWith.listeningTo,
             progress: this.listeningWith.progress,
             paused: this.listeningWith.paused,
+            seek
         });
     }
 
@@ -273,6 +282,7 @@ export class Client {
     async asOnlineUser(user?: User): Promise<OnlineUser> {
         user = user ?? await this.getUser();
         return {
+            socialStatus: this.getSocialStatus(),
             username: user.username,
             discriminator: user.discriminator,
             userId: user.userId,
@@ -288,6 +298,7 @@ export class Client {
     async asOfflineUser(user?: User): Promise<OfflineUser> {
         user = user ?? await this.getUser();
         return {
+            socialStatus: this.getSocialStatus(),
             username: user.username,
             discriminator: user.discriminator,
             userId: user.userId,
@@ -324,7 +335,7 @@ export class Client {
         this.ping();
 
         // Check if the message is from a bot.
-        const { token } = data as InitializeMessage;
+        const { token, broadcast } = data as InitializeMessage;
         if (!hasBot && token == constants.DISCORD_TOKEN) {
             setTimeout(async () => {
                 // Set the user as the bot.
@@ -356,6 +367,9 @@ export class Client {
                     recentUsers[user.userId] && (delete recentUsers[user.userId]);
                     // Add the user to the collection of online users.
                     onlineUsers[user.userId] = await this.asOnlineUser(user);
+
+                    // Set the user's social status.
+                    this.socialStatus = broadcast;
                 }
             }, 1000);
         }

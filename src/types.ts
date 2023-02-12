@@ -27,6 +27,8 @@ export type Playlist = {
     tracks: Track[];
 };
 
+export type SocialStatus = "Nobody" | "Friends" | "Everyone";
+
 /*
  * User/Authentication.
  */
@@ -39,11 +41,13 @@ export type BasicUser = {
 };
 
 export type OnlineUser = BasicUser & {
+    socialStatus: SocialStatus;
     listeningTo?: Track;
     progress?: number;
 };
 
 export type OfflineUser = BasicUser & {
+    socialStatus: SocialStatus;
     lastSeen: number;
     lastListeningTo: Track;
 };
@@ -89,6 +93,7 @@ export type SearchResults = {
 export type InitializeMessage = BaseGatewayMessage & {
     type: "initialize";
     token?: string;
+    broadcast?: SocialStatus;
 };
 // From client.
 export type LatencyMessage = BaseGatewayMessage & {
@@ -101,6 +106,7 @@ export type NowPlayingMessage = BaseGatewayMessage & {
     seek: number;
     sync?: boolean;
     paused?: boolean;
+    seeked?: boolean;
 };
 /**
  * From client.
@@ -134,6 +140,7 @@ export type SyncMessage = BaseGatewayMessage & {
     track: Track | null;
     progress: number;
     paused: boolean;
+    seek: boolean;
 };
 // To client.
 export type RecentsMessage = BaseGatewayMessage & {

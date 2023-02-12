@@ -9,7 +9,7 @@ import { NowPlayingMessage } from "app/types";
  * @param data The playing message received.
  */
 export default async function (client: Client, data: NowPlayingMessage) {
-    const { track, seek, sync, paused } = data;
+    const { track, seek, sync, paused, seeked } = data;
 
     // Check if the current track is different to the one sent.
     if (client.isLoggedIn() && track &&
@@ -27,7 +27,7 @@ export default async function (client: Client, data: NowPlayingMessage) {
     if (sync) {
         // Update listening to clients.
         for (const id in client.listeningAlong) {
-            client.listeningAlong[id]?.syncWith();
+            client.listeningAlong[id]?.syncWith(seeked);
         }
     }
 
