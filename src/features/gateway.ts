@@ -170,7 +170,7 @@ export class Client {
     /**
      * Stops listening along with another client.
      */
-    stopListeningAlong(): void {
+    stopListeningAlong(host: boolean = false): void {
         // Check if the client is listening along.
         if (!this.listeningWith) return;
 
@@ -178,6 +178,17 @@ export class Client {
         delete this.listeningWith.listeningAlong[this.getId()];
         // Remove the listening with.
         this.listeningWith = null;
+
+        // Check if the host left.
+        if (host) {
+            // Send null sync message.
+            this.send(<types.SyncMessage> {
+                type: "sync",
+                track: null,
+                progress: -1,
+                paused: true
+            });
+        }
     }
 
     /**
@@ -371,6 +382,12 @@ export class Client {
 
         // Remove the client from listening along states.
         if (this.listeningWith) this.stopListeningAlong();
+        // Check if the client has listeners.
+        if (Object.keys(this.listeningAlong).length > 0) {
+            // Stop listening along with the client.
+            Object.values(this.listeningAlong).forEach(
+                client => client.stopListeningAlong(true));
+        }
 
         // Remove the client from the collections.
         delete clients[this.getId()];
