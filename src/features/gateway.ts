@@ -265,9 +265,9 @@ export class Client {
     /**
      * Converts this user into an online user.
      */
-    async asOnlineUser(user?: User): Promise<OnlineUser> {
+    async asOnlineUser(user?: User): Promise<OnlineUser|null> {
         user = user ?? await this.getUser();
-        return {
+        return user ? {
             socialStatus: this.socialStatus,
             username: user.username,
             discriminator: user.discriminator,
@@ -275,15 +275,15 @@ export class Client {
             avatar: user.avatar,
             progress: this.progress,
             listeningTo: this.listeningTo
-        };
+        } : null;
     }
 
     /**
      * Converts this user into an offline user.
      */
-    async asOfflineUser(user?: User): Promise<OfflineUser> {
+    async asOfflineUser(user?: User): Promise<OfflineUser|null> {
         user = user ?? await this.getUser();
-        return {
+        return user ? {
             socialStatus: this.socialStatus,
             username: user.username,
             discriminator: user.discriminator,
@@ -291,7 +291,7 @@ export class Client {
             avatar: user.avatar,
             lastSeen: Date.now(),
             lastListeningTo: this.listeningTo
-        };
+        } : null;
     }
 
     /**
@@ -355,7 +355,8 @@ export class Client {
                     // Remove the user from the list of recent users.
                     recentUsers[user.userId] && (delete recentUsers[user.userId]);
                     // Add the user to the collection of online users.
-                    onlineUsers[user.userId] = await this.asOnlineUser(user);
+                    const online = await this.asOnlineUser(user);
+                    online && (onlineUsers[user.userId] = online);
                 }
             }, 1000);
         }
@@ -434,11 +435,12 @@ export class Client {
         if (this.userId && users[this.userId]) {
             // Add the user to a list of recent users.
             if (!recentUsers[this.userId] && this.listeningTo) {
-                recentUsers[this.userId] = {
-                    ...await this.asOfflineUser(),
+                const offlineUser = await this.asOfflineUser();
+                offlineUser && (recentUsers[this.userId] = {
+                    ...offlineUser,
                     lastSeen: Date.now(),
                     lastListeningTo: this.listeningTo
-                };
+                });
             }
 
             // Remove the user from online users.

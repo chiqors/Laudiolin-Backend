@@ -19,8 +19,9 @@ export default function (client: Client, data: DiscordLoadUsersMessage) {
     // Load all Laudiolin-online users.
     Object.keys(users).forEach(async (userId) => {
         const gatewayUser = users[userId][0];
-        gatewayUser && (onlineUsers[userId] = {
-            ...await gatewayUser.asOnlineUser(),
+        const onlineUser = await gatewayUser.asOnlineUser();
+        onlineUser && gatewayUser && (onlineUsers[userId] = {
+            ...onlineUser,
             listeningTo: gatewayUser.listeningTo,
             progress: gatewayUser.progress
         });
