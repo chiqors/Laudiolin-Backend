@@ -34,7 +34,10 @@ export default async function (client: Client, data: NowPlayingMessage) {
         for (const id in client.listeningAlong) {
             client.listeningAlong[id]?.syncWith(seeked);
         }
+    }
 
+    // Check if the presence should be updated.
+    if (sync || !track) {
         // Update the client's rich presence.
         await client.updatePresence();
     }
