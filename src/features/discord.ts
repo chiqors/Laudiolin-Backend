@@ -56,11 +56,15 @@ export async function renew(user: User): Promise<void> {
 
 /**
  * Gets the user's friends.
- * @param userId The user's ID.
+ * @param user The user.
  */
-export async function getFriends(userId: string): Promise<Friend[] | null> {
-    // Fetch the user from the database.
-    const user = await database.getUser(userId);
+export async function getFriends(user: User | string): Promise<Friend[] | null> {
+    // Check if the user is a string.
+    if (typeof user == "string") {
+        // Fetch the user from the database.
+        user = await database.getUser(user);
+    }
+
     // Check if the user exists.
     if (!user) return null;
 
