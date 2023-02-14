@@ -52,6 +52,10 @@ export type Presence = {
     },
     flags?: number | 0,
     session_id?: string;
+    buttons?: {
+        label: string;
+        url: string;
+    }[];
 };
 
 export enum PresenceType {
@@ -62,6 +66,7 @@ export enum PresenceType {
     Custom = 4,
     Competing = 5
 }
+export type PresenceMode = "Generic" | "Simple" | "None";
 export type SocialStatus = "Nobody" | "Friends" | "Everyone";
 
 /*
@@ -144,6 +149,7 @@ export type InitializeMessage = BaseGatewayMessage & {
     type: "initialize";
     token?: string;
     broadcast?: SocialStatus;
+    presence?: PresenceMode;
 };
 // From client.
 export type LatencyMessage = BaseGatewayMessage & {
