@@ -227,9 +227,10 @@ export class Client {
         if (!user) return;
 
         // Check if the presence mode is set to none.
-        if (this.presenceMode == "None" && user.presenceToken) {
-            // Clear the presence.
-            await updatePresence(user, null);
+        if (this.presenceMode == "None") {
+            if (user.presenceToken)
+                // Clear the presence.
+                await updatePresence(user, null);
             return;
         }
 
