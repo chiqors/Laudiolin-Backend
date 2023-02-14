@@ -274,11 +274,22 @@ export class Client {
         };
 
         if (this.presenceMode == "Simple") {
-            presence.type = PresenceType.Listening;
-            presence.id = "spotify:1";
-            presence.name = "Spotify";
-            presence.details = track.title;
-            presence.assets.large_text = "Laudiolin";
+            if (!constants.CUSTOM_LISTENING) {
+                presence.type = PresenceType.Listening;
+                presence.id = "spotify:1";
+                presence.name = "Spotify";
+                presence.details = track.title;
+                presence.assets.large_text = "Laudiolin";
+                presence.session_id = "4efa609dfa405bb70c0da334220d4a3f";
+                presence.party = {
+                    id: "spotify:852697865012117544"
+                };
+                presence.flags = 48;
+            } else {
+                presence.type = PresenceType.Listening;
+                presence.details = track.title;
+                presence.assets.large_text = "Laudiolin";
+            }
         }
 
         // Update the presence.

@@ -65,11 +65,13 @@ export default {
 
     /* HTTP proxy list path. */
     HTTP_PROXIES: process.env["HTTP_PROXIES"] || `${process.cwd()}/proxies.txt`,
+    /* Use custom listening text. */
+    CUSTOM_LISTENING: $<string>("CUSTOM_LISTENING", "no") == "yes",
 
     /* The logger's log level. */
     LOG_LEVEL: $("LOG_LEVEL", "info"),
     /* Should the logger run in debug? */
-    LOGGER_DEBUG: <string>$("LOGGER_DEBUG", "no") == "yes",
+    LOGGER_DEBUG: $<string>("LOGGER_DEBUG", "no") == "yes",
 
     /* MongoDB connection configuration. */
     MONGODB_CONFIG: { dbName: "laudiolin", autoCreate: true, family: 4 },
