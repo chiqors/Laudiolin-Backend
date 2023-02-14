@@ -288,7 +288,6 @@ export class Client {
             } else {
                 presence.type = PresenceType.Listening;
                 presence.details = track.title;
-                presence.assets.large_text = "Laudiolin";
             }
         }
 
