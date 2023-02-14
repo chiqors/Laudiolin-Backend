@@ -27,6 +27,41 @@ export type Playlist = {
     tracks: Track[];
 };
 
+export type Presence = {
+    id: string | "spotify:1";
+    name: string | "Spotify" | "Laudiolin";
+    type: PresenceType;
+    url?: string;
+    details: string;
+    state: string;
+    application_id: string;
+    timestamps?: {
+        start: number;
+        end: number;
+    },
+    sync_id?: string;
+    platform: "desktop" | "ios" | "android";
+    party?: {
+        id: string;
+    },
+    assets?: {
+        large_image?: string;
+        large_text?: string;
+        small_image?: string;
+        small_text?: string;
+    },
+    flags?: number | 0,
+    session_id?: string;
+};
+
+export enum PresenceType {
+    Playing = 0,
+    Streaming = 1,
+    Listening = 2,
+    Watching = 3,
+    Custom = 4,
+    Competing = 5
+}
 export type SocialStatus = "Nobody" | "Friends" | "Everyone";
 
 /*
@@ -38,6 +73,15 @@ export type BasicUser = {
     discriminator?: string;
     userId?: string;
     avatar?: string;
+};
+
+/**
+ * @param id Use over {@link BasicUser#userId}.
+ * @param display_name Use over {@link BasicUser#username}.
+ */
+export type Friend = BasicUser & {
+    id: string;
+    display_name?: string;
 };
 
 export type OnlineUser = BasicUser & {
@@ -57,6 +101,8 @@ export type OfflineUser = BasicUser & {
  * @param refresh The user's refresh token.
  * @param scope Any OAuth2 scopes.
  * @param type The authentication token type.
+ * @param discord The user's Discord OAuth2 access token.
+ * @param expires The time when the token expires.
  */
 export type User = BasicUser & {
     playlists?: string[];
@@ -67,9 +113,13 @@ export type User = BasicUser & {
     authCode?: string;
     codeExpires?: string;
 
-    scope?: string;
-    refresh?: string;
     type?: string;
+    scope?: string;
+    discord?: string;
+    refresh?: string;
+    expires?: number;
+
+    presenceToken?: string;
 };
 
 /*

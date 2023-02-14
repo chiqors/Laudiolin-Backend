@@ -1,11 +1,137 @@
 /* Imports. */
-import type { User } from "app/types";
+import type { Friend, User } from "app/types";
 
+import { logger } from "app/index";
 import constants from "app/constants";
 import { Request, Response, Router } from "express";
 
 import * as database from "features/database";
 import { defaultObject } from "app/utils";
+import { Presence } from "app/types";
+
+/**
+ * Renews a user's access token.
+ * Asynchronously updates the user's access token.
+ * @param user The user to renew. This object is updated.
+ */
+export async function renew(user: User): Promise<void> {
+    // Check if the user is due for a refresh.
+    if (Date.now() < user.expires ?? 0) return;
+    // Check if the user has a refresh token.
+    if (!user.refresh) return;
+
+    // Perform OAuth2 exchange.
+    const response = await fetch(constants.DISCORD_TOKEN_EXCHANGE, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            client_id: constants.DISCORD_CLIENT_ID,
+            client_secret: constants.DISCORD_CLIENT_SECRET,
+            refresh_token: user.refresh,
+            grant_type: "refresh_token"
+        })
+    });
+
+    // Get the response data.
+    const data = await response.json();
+    // Check if the response is valid.
+    if (!data || !response.ok) return;
+    if (!data.access_token) return;
+
+    // Update the user's access token.
+    user.discord = data.access_token;
+    user.expires = Date.now() + (data.expires_in ?? 0) * 1000;
+    user.refresh = data.refresh_token ?? user.refresh;
+    user.scope = data.scope ?? user.scope;
+
+    // Save the user.
+    database.saveUser(user)
+        .catch(err => logger.error(err));
+}
+
+/**
+ * Gets the user's friends.
+ * @param userId The user's ID.
+ */
+export async function getFriends(userId: string): Promise<Friend[] | null> {
+    // Fetch the user from the database.
+    const user = await database.getUser(userId);
+    // Check if the user exists.
+    if (!user) return null;
+
+    await renew(user); // Check if the user needs to refresh.
+
+    // Fetch the user's friends.
+    const response = await fetch(constants.DISCORD_RELATIONSHIPS, {
+        method: "GET",
+        headers: { Authorization: `${user.type} ${user.discord}` }
+    });
+
+    // Get the response data.
+    const data = await response.json();
+    // Check if the response is valid.
+    if (!data || !response.ok) return null;
+
+    return data as Friend[]; // Return the friends.
+}
+
+/**
+ * Updates the user's presence.
+ * @param user The user to update.
+ * @param presence The new presence.
+ */
+export async function updatePresence(
+    user: User | string,
+    presence: Presence | null
+) {
+    // Check if the user is a string.
+    if (typeof user == "string") {
+        // Fetch the user from the database.
+        user = await database.getUser(user);
+        // Check if the user exists.
+        if (!user) return;
+    }
+
+    await renew(user); // Check if the user needs to refresh.
+
+    if (presence == null) {
+        // Delete the presence.
+        await fetch(`${constants.DISCORD_PRESENCE}/delete`, {
+            method: "POST", headers: { Authorization: `${user.type} ${user.discord}` },
+            body: JSON.stringify({ token: user.presenceToken })
+        });
+
+        // Delete the token.
+        user.presenceToken = null;
+        // Save the user.
+        database.saveUser(user)
+            .catch(err => logger.error(err));
+    } else {
+        // Update the presence.
+        const response = await fetch(constants.DISCORD_PRESENCE, {
+            method: "POST", headers: { Authorization: `${user.type} ${user.discord}` },
+            body: JSON.stringify(presence)
+        });
+
+        // Get the response data.
+        const data = await response.json();
+        // Check if the response is valid.
+        if (!data || !response.ok) return;
+
+        try {
+            // Update the token.
+            user.presenceToken = data.token;
+            // Save the user.
+            await database.saveUser(user);
+        } catch (err) {
+            logger.error(err);
+        }
+    }
+}
+
+/* -------------------------------------------------- */
 
 /**
  * Redirects the user to the configured OAuth2 URL.
@@ -54,7 +180,8 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     }
 
     // Pull data from the response.
-    const { access_token, refresh_token, token_type, scope } = data;
+    const { access_token, refresh_token,
+        token_type, scope, expires_in } = data;
     // Get the user information.
     const userResponse = await fetch(constants.DISCORD_USER_INFO, {
         method: "GET",
@@ -84,9 +211,12 @@ async function handle(req: Request, rsp: Response): Promise<void> {
         discriminator,
         accessToken: token,
         avatar: avatarUrl,
-        refresh: refresh_token,
+
+        scope,
         type: token_type,
-        scope
+        discord: access_token,
+        refresh: refresh_token,
+        expires: Date.now() + (expires_in * 1000)
     };
 
     // Check if the user already exists.

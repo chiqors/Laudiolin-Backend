@@ -55,9 +55,13 @@ export const UserSchema = new Schema({
     userId: String, // Discord user ID.
     avatar: String, // Discord avatar URL.
 
+    type: String, // Discord OAuth2 token type.
     scope: String, // Discord OAuth2 scopes.
+    discord: String, // Discord OAuth2 access token.
     refresh: String, // Discord OAuth2 refresh token.
-    type: String // Discord OAuth2 token type.
+    expires: Number, // Time when the token expires.
+
+    presenceToken: String, // The user's presence token.
 });
 
 export let PlaylistModel: Model<any> = undefined;

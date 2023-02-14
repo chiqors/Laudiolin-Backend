@@ -54,6 +54,10 @@ export default {
     DISCORD_TOKEN_EXCHANGE: "https://discord.com/api/v10/oauth2/token",
     /* Discord user info URL. */
     DISCORD_USER_INFO: "https://discord.com/api/v10/users/@me",
+    /* Discord friends list URL. */
+    DISCORD_RELATIONSHIPS: "https://discord.com/api/v10/users/@me/relationships",
+    /* Discord presence URL */
+    DISCORD_PRESENCE: "https://discord.com/api/v10/users/@me/headless-sessions",
     /* Discord bot gateway token. */
     DISCORD_TOKEN: $("DISCORD_TOKEN", ""),
 
@@ -76,7 +80,9 @@ export default {
         userId: "",
         avatar: "",
         scope: "",
+        discord: "",
         refresh: "",
+        expires: -1,
         type: ""
     },
 
