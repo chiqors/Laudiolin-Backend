@@ -15,6 +15,9 @@ import { Presence } from "app/types";
  * @param user The user to renew. This object is updated.
  */
 export async function renew(user: User): Promise<void> {
+    // Check if the user is invalid.
+    if (!user) return;
+
     // Check if the user is due for a refresh.
     if (Date.now() < user.expires ?? 0) return;
     // Check if the user has a refresh token.
@@ -47,7 +50,7 @@ export async function renew(user: User): Promise<void> {
     user.scope = data.scope ?? user.scope;
 
     // Save the user.
-    database.saveUser(user)
+    database.updateUser(user)
         .catch(err => logger.error(err));
 }
 
@@ -94,37 +97,47 @@ export async function updatePresence(
         if (!user) return;
     }
 
+    if (!user) return; // Check if the user is invalid.
     await renew(user); // Check if the user needs to refresh.
 
     if (presence == null) {
         // Delete the presence.
         await fetch(`${constants.DISCORD_PRESENCE}/delete`, {
-            method: "POST", headers: { Authorization: `${user.type} ${user.discord}` },
+            method: "POST", headers: {
+                Authorization: `${user.type} ${user.discord}`,
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({ token: user.presenceToken })
         });
 
         // Delete the token.
         user.presenceToken = null;
         // Save the user.
-        database.saveUser(user)
+        database.updateUser(user)
             .catch(err => logger.error(err));
     } else {
         // Update the presence.
         const response = await fetch(constants.DISCORD_PRESENCE, {
-            method: "POST", headers: { Authorization: `${user.type} ${user.discord}` },
-            body: JSON.stringify(presence)
+            method: "POST", headers: {
+                Authorization: `${user.type} ${user.discord}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ activities: [presence] })
         });
 
         // Get the response data.
         const data = await response.json();
         // Check if the response is valid.
-        if (!data || !response.ok) return;
+        if (!data || !response.ok) {
+            logger.warn("Invalid response from Discord's API.", data);
+            return;
+        }
 
         try {
             // Update the token.
             user.presenceToken = data.token;
             // Save the user.
-            await database.saveUser(user);
+            await database.updateUser(user);
         } catch (err) {
             logger.error(err);
         }

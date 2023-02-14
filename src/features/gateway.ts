@@ -5,19 +5,21 @@
 import constants from "app/constants";
 
 import { logger } from "app/index";
-import { WebSocket } from "ws";
-import { IncomingMessage } from "http";
+import { onlineUsers, recentUsers } from "features/social";
+import { updatePresence } from "features/discord";
 import * as types from "app/types";
 import * as database from "features/database";
-import { onlineUsers, recentUsers } from "features/social";
 
+import { WebSocket } from "ws";
+import { IncomingMessage } from "http";
 import { isJson } from "app/utils";
 import { randomUUID } from "crypto";
 
 import type {
     GatewayMessage, InitializeMessage, OfflineUser,
-    OnlineUser, SocialStatus, Track, User
+    OnlineUser, Presence, PresenceMode, SocialStatus, Track, User
 } from "app/types";
+import { PresenceType } from "app/types";
 
 let hasBot: boolean = false;
 const clients: { [key: string]: Client } = {};
@@ -92,6 +94,7 @@ export class Client {
     lastPing: number = Date.now();
 
     /* Player information. */
+    startedListening: number | null = null
     listeningTo: Track | null = null;
     paused: boolean = true;
     progress: number = 0;
@@ -99,8 +102,10 @@ export class Client {
 
     /* Social information. */
     socialStatus: SocialStatus = "Nobody";
+    presenceMode: PresenceMode = "None";
     listeningAlong: { [key: string]: Client } = {};
     listeningWith: Client | null = null;
+    lastUpdate: number = Date.now();
 
     constructor(private readonly socket: WebSocket) {
         // Send the initialize message.
@@ -205,6 +210,78 @@ export class Client {
             paused: this.listeningWith.paused,
             seek
         });
+    }
+
+    /**
+     * Updates the client's presence.
+     */
+    async updatePresence(): Promise<void> {
+        // Check if the client should update.
+        if (Date.now() - this.lastUpdate < 4e3) return;
+        // Update the last update time.
+        this.lastUpdate = Date.now();
+
+        // Fetch the user.
+        const user = await this.getUser();
+        // Check if the user is valid.
+        if (!user) return;
+
+        // Check if the presence mode is set to none.
+        if (this.presenceMode == "None" && user.presenceToken) {
+            // Clear the presence.
+            await updatePresence(user, null);
+            return;
+        }
+
+        // Check if the presence should be cleared.
+        const track = this.listeningTo;
+        if (!track) {
+            // Clear the presence.
+            await updatePresence(user, null);
+            return;
+        }
+
+        let presence: Presence = {
+            platform: "desktop",
+            id: "laudiolin",
+            name: "Laudiolin",
+            type: PresenceType.Playing,
+            application_id: constants.DISCORD_CLIENT_ID,
+
+            details: `Listening to ${track.title}`,
+            state: track.artist,
+            timestamps: {
+                start: this.startedListening,
+                end: this.startedListening + (track.duration * 1000)
+            },
+            assets: {
+                large_image: track.icon,
+                large_text: track.title,
+                small_image: constants.DISCORD_ICON,
+                small_text: "Laudiolin"
+            },
+            buttons: [
+                {
+                    label: "Play on Laudiolin",
+                    url: `${constants.WEB_TARGET}/track/${track.id}`
+                },
+                {
+                    label: "Listen Along",
+                    url: `${constants.WEB_TARGET}/listen/${user.userId}`
+                }
+            ]
+        };
+
+        if (this.presenceMode == "Simple") {
+            presence.type = PresenceType.Listening;
+            presence.id = "spotify:1";
+            presence.name = "Spotify";
+            presence.details = track.title;
+            presence.assets.large_text = "Laudiolin";
+        }
+
+        // Update the presence.
+        await updatePresence(user, presence);
     }
 
     /*
@@ -321,7 +398,7 @@ export class Client {
         this.ping();
 
         // Check if the message is from a bot.
-        const { token, broadcast } = data as InitializeMessage;
+        const { token, broadcast, presence } = data as InitializeMessage;
         if (!hasBot && token == constants.DISCORD_TOKEN) {
             setTimeout(async () => {
                 // Set the user as the bot.
@@ -351,6 +428,8 @@ export class Client {
 
                     // Set the user's social status.
                     this.socialStatus = broadcast ?? "Everyone";
+                    // Set the user's presence type.
+                    this.presenceMode = presence ?? "None";
 
                     // Remove the user from the list of recent users.
                     recentUsers[user.userId] && (delete recentUsers[user.userId]);
@@ -429,6 +508,9 @@ export class Client {
             Object.values(this.listeningAlong).forEach(
                 client => client.stopListeningAlong(true));
         }
+
+        // Clear the client's rich presence.
+        await updatePresence(this.userId, null);
 
         // Remove the client from the 'clients' collection.
         delete clients[this.getId()];

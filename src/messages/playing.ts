@@ -12,11 +12,16 @@ export default async function (client: Client, data: NowPlayingMessage) {
     const { track, seek, sync, paused, seeked } = data;
 
     // Check if the current track is different to the one sent.
-    if (client.isLoggedIn() && track &&
+    if (client.isLoggedIn() &&
         client.listeningTo?.id != track?.id) {
+        // Set the client's listening start.
+        client.startedListening = Date.now();
         // Push the new track to the recently played list.
-        await client.addRecentlyPlayed(track);
+        track && await client.addRecentlyPlayed(track);
     }
+
+    // Check if the track is null.
+    if (!track) client.startedListening = null;
 
     // Update the client's player status.
     client.listeningTo = track;
@@ -29,6 +34,9 @@ export default async function (client: Client, data: NowPlayingMessage) {
         for (const id in client.listeningAlong) {
             client.listeningAlong[id]?.syncWith(seeked);
         }
+
+        // Update the client's rich presence.
+        await client.updatePresence();
     }
 
     // Set the user's online status.

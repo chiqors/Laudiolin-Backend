@@ -60,6 +60,8 @@ export default {
     DISCORD_PRESENCE: "https://discord.com/api/v10/users/@me/headless-sessions",
     /* Discord bot gateway token. */
     DISCORD_TOKEN: $("DISCORD_TOKEN", ""),
+    /* Discord application icon asset. */
+    DISCORD_ICON: $("DISCORD_ICON", ""),
 
     /* HTTP proxy list path. */
     HTTP_PROXIES: process.env["HTTP_PROXIES"] || `${process.cwd()}/proxies.txt`,
