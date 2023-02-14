@@ -34,7 +34,7 @@ async function available(req: Request, rsp: Response): Promise<void> {
     // Filter out users which are not public.
     users = users.filter(user => user.socialStatus == "Everyone");
     // Validate users which are friends.
-    if (token) {
+    if (token && token != "") {
         // Check if there are any online users which are 'Friends'.
         const friendUsers = allUsers.filter(user => user.socialStatus == "Friends");
         if (friendUsers.length != 0) {
@@ -67,7 +67,7 @@ async function recent(req: Request, rsp: Response): Promise<void> {
     // Filter out users which are not public.
     users = users.filter(user => user.socialStatus == "Everyone");
     // Validate users which are friends.
-    if (token) {
+    if (token && token != "") {
         // Check if there are any online users which are 'Friends'.
         const friendUsers = allUsers.filter(user => user.socialStatus == "Friends");
         if (friendUsers.length != 0) {
