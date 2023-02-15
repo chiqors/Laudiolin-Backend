@@ -62,6 +62,8 @@ export default {
     DISCORD_TOKEN: $("DISCORD_TOKEN", ""),
     /* Discord application icon asset. */
     DISCORD_ICON: $("DISCORD_ICON", ""),
+    /* Discord logging webhook. */
+    DISCORD_WEBHOOK: $("DISCORD_WEBHOOK", ""),
 
     /* HTTP proxy list path. */
     HTTP_PROXIES: process.env["HTTP_PROXIES"] || `${process.cwd()}/proxies.txt`,

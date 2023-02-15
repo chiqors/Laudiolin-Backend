@@ -1,11 +1,16 @@
-import proxyAgent from "proxy-agent";
+import ProxyAgent from "proxy-agent";
 import { Request } from "express";
 import { SearchEngine } from "./types";
 import { readFileSync } from "node:fs";
 import constants from "./constants";
 
+import { EmbedBuilder, WebhookClient } from "discord.js";
+
 // List of HTTP proxies.
 let proxies: string[] = [];
+// Log webhook.
+const webhook = new WebhookClient({
+    url: constants.DISCORD_WEBHOOK });
 
 /**
  * Loads the HTTP proxies list from the disk.
@@ -27,7 +32,7 @@ export async function proxyFetch(
     if (process.env["USE_PROXY"] == "true") {
         // Get a random proxy.
         const proxyInfo = loadProxies()[Math.floor(Math.random() * proxies.length)];
-        init["agent"] = new proxyAgent(`https://${proxyInfo}`);
+        init["agent"] = new ProxyAgent(`https://${proxyInfo}`);
     }
 
     // Attempt to fetch the request.
@@ -213,4 +218,27 @@ export function extractPlaylistId(url: string): string | null {
     if (type == "SoundCloud") return url.split("sets/")[1];
 
     return null;
+}
+
+/**
+ * Attempts to log an error to the webhook.
+ * @param error The error to log.
+ */
+export async function logToWebhook(error: Error): Promise<void> {
+    // Create the embed.
+    const embed = new EmbedBuilder()
+        .setColor(0xc75450)
+        .setTitle("Error")
+        .setDescription(`\`\`\`${error.stack}\`\`\``)
+        .addFields({
+            name: error.name,
+            value: error.message
+        })
+        .setTimestamp()
+        .setFooter({
+            text: "Laudiolin Backend"
+        })
+
+    // Send the embed to a URL.
+    await webhook?.send({ embeds: [embed] });
 }
