@@ -447,6 +447,12 @@ export class Client {
                     // Add the user to the collection of online users.
                     const online = await this.asOnlineUser(user);
                     online && (onlineUsers[user.userId] = online);
+
+                    // Check if the user has a presence token.
+                    if (user.presenceToken) {
+                        // Clear the existing presence.
+                        await this.updatePresence();
+                    }
                 }
             }, 1000);
         }
