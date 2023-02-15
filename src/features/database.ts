@@ -16,6 +16,7 @@ let database: Mongoose | null = null;
 connect(constants.MONGODB_URI, constants.MONGODB_CONFIG)
     .then((db) => {
         database = db; // Save the database.
+        db.set("strictQuery", false); // Disable strict query mode.
         logger.info("Connected to the database.");
 
         // Set constants.
