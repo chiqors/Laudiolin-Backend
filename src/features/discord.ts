@@ -106,13 +106,21 @@ export async function updatePresence(
 
     if (presence == null) {
         // Delete the presence.
-        await fetch(`${constants.DISCORD_PRESENCE}/delete`, {
+        const response = await fetch(`${constants.DISCORD_PRESENCE}/delete`, {
             method: "POST", headers: {
                 Authorization: `${user.type} ${user.discord}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({ token: user.presenceToken })
         });
+
+        // Check if a rate limit has been hit.
+        if (response.status == 429) {
+            const { retry_after } = await response.json();
+            // Retry after the rate limit.
+            setTimeout(() => updatePresence(user, presence), retry_after * 1000);
+            return;
+        }
 
         // Delete the token.
         user.presenceToken = null;
@@ -133,6 +141,14 @@ export async function updatePresence(
         const data = await response.json();
         // Check if the response is valid.
         if (!data || !response.ok) {
+            // Check if a rate limit has been hit.
+            if (response.status == 429) {
+                // Retry after the rate limit.
+                setTimeout(() => updatePresence(user, presence),
+                    data.retry_after * 1000);
+                return;
+            }
+
             logger.warn("Invalid response from Discord's API.", data);
             return;
         }
@@ -143,7 +159,7 @@ export async function updatePresence(
             // Save the user.
             await database.updateUser(user);
         } catch (err) {
-            logger.error(err);
+            throw err;
         }
     }
 }
