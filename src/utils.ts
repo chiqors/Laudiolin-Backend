@@ -258,15 +258,19 @@ export class DiscordLogger implements TTransportLogger<(message: ILogObject) => 
     warn: any = this.log;
 
     /**
-     * Logs te object to the webhook.
+     * Logs the object to the webhook.
      * @param obj The object to log.
      */
     log(obj: ILogObject): void {
         let pretty = "(no error supplied)";
         let message = "(no message supplied)";
 
-        // Get the default error message.
+        // Set the default error message.
         const error = obj.argumentsArray[0];
+        if (typeof error == "string")
+            message = error
+
+        // Get the error message.
         if (error instanceof Object && "isError" in error) {
             const errorObj = error as IErrorObject;
             const frame = errorObj.codeFrame ?? null;
