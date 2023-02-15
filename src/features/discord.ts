@@ -104,7 +104,7 @@ export async function updatePresence(
     if (!user) return; // Check if the user is invalid.
     await renew(user); // Check if the user needs to refresh.
 
-    if (presence == null) {
+    {
         // Delete the presence.
         const response = await fetch(`${constants.DISCORD_PRESENCE}/delete`, {
             method: "POST", headers: {
@@ -121,7 +121,9 @@ export async function updatePresence(
             setTimeout(() => updatePresence(user, presence), retry_after * 1000);
             return;
         }
+    }
 
+    if (presence == null) {
         // Delete the token.
         user.presenceToken = null;
         // Save the user.
@@ -146,6 +148,7 @@ export async function updatePresence(
                 // Retry after the rate limit.
                 setTimeout(() => updatePresence(user, presence),
                     data.retry_after * 1000);
+                logger.debug(`Rate limit hit while updating presence. Trying again in ${data.retry_after}s.`);
                 return;
             }
 
