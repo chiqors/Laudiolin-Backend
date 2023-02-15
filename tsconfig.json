@@ -6,7 +6,6 @@
     "baseUrl": "src",
     "moduleResolution": "node",
 
-    "sourceMap": true,
     "inlineSourceMap": true,
     "incremental": true,
     "esModuleInterop": true,
