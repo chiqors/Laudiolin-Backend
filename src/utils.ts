@@ -1,8 +1,12 @@
+import type { Request } from "express";
+import type { SearchEngine } from "./types";
+import type { TTransportLogger } from "tslog";
+import type { ILogObject, IErrorObject } from "tslog/src/interfaces";
+
 import ProxyAgent from "proxy-agent";
-import { Request } from "express";
-import { SearchEngine } from "./types";
 import { readFileSync } from "node:fs";
 import constants from "./constants";
+import { logger } from "app/index";
 
 import { EmbedBuilder, WebhookClient } from "discord.js";
 
@@ -241,4 +245,65 @@ export async function logToWebhook(error: Error): Promise<void> {
 
     // Send the embed to a URL.
     await webhook?.send({ embeds: [embed] });
+}
+
+// noinspection JSUnusedGlobalSymbols
+export class DiscordLogger implements TTransportLogger<(message: ILogObject) => void> {
+    debug: any;
+    error: any = this.log;
+    fatal: any = this.log;
+    info: any;
+    silly: any;
+    trace: any;
+    warn: any = this.log;
+
+    /**
+     * Logs te object to the webhook.
+     * @param obj The object to log.
+     */
+    log(obj: ILogObject): void {
+        let pretty = "(no error supplied)";
+        let message = "(no message supplied)";
+
+        // Get the default error message.
+        const error = obj.argumentsArray[0];
+        if (error instanceof Object && "isError" in error) {
+            const errorObj = error as IErrorObject;
+            const frame = errorObj.codeFrame ?? null;
+            if (frame) {
+                pretty = "";
+                message = errorObj.message;
+
+                frame.linesBefore.forEach(line =>
+                    pretty += `   | ${line}\n`);
+                pretty += `-> | ${frame.relevantLine} (${frame.lineNumber})\n`;
+                frame.linesAfter.forEach(line =>
+                    pretty += `   | ${line}\n`);
+            }
+        }
+
+        // Create the embed.
+        const embed = new EmbedBuilder()
+            .setColor(0xc75450)
+            .setTitle(obj.logLevel == "error" ? "Error" : "Warning")
+            .setDescription(`\`\`\`${pretty}\`\`\``)
+            .addFields(
+                {
+                    name: "Location",
+                    value: `at ${obj.fileName}:${obj.lineNumber}`
+                },
+                {
+                    name: "Message",
+                    value: message
+                }
+            )
+            .setTimestamp()
+            .setFooter({
+                text: "Laudiolin Backend"
+            })
+
+        // Send the embed to a URL.
+        webhook?.send({ embeds: [embed] })
+            .catch(err => logger.debug(err));
+    }
 }

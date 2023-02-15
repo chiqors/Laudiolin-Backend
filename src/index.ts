@@ -4,7 +4,7 @@ import "dotenv/config";
 import constants from "./constants";
 
 /* Create a logger instance. */
-import { logToWebhook } from "app/utils";
+import { DiscordLogger } from "app/utils";
 import { Logger, TLogLevelName } from "tslog";
 export const logger: Logger = new Logger({
     name: "Laudiolin",
@@ -14,11 +14,10 @@ export const logger: Logger = new Logger({
     dateTimeTimezone: "America/New_York",
     displayFilePath: constants.LOGGER_DEBUG ? "hideNodeModulesOnly" : "hidden"
 });
+logger.attachTransport(new DiscordLogger(), "warn");
 
-process.on("uncaughtException", error => {
-    logger.error("An error occurred in the application.", error);
-    logToWebhook(error).catch(err => logger.warn("Failed to log error to webhook.", err));
-});
+process.on("uncaughtException", error =>
+    logger.error("An error occurred in the application.", error));
 
 /* Configure async apps. */
 import "./engines/smart";
