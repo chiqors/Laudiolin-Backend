@@ -185,6 +185,10 @@ export async function download(isrc: string): Promise<string> {
         track = await searchIsrc(isrc);
     }
 
+    // Check if the track was found.
+    if (!track.title || !track.artist)
+        throw new Error("Failed to find the track.");
+
     // Search for the track.
     const searchResults = await youtube.search(
         `${track.title} - ${track.artist} - Topic`);
@@ -214,6 +218,10 @@ export async function stream(isrc: string, pipe: any): Promise<void> {
         // Perform a search for the track.
         track = await searchIsrc(isrc);
     }
+
+    // Check if the track was found.
+    if (!track.title || !track.artist)
+        throw new Error("Failed to find the track.");
 
     // Search for the track.
     const searchResults = await youtube.search(
