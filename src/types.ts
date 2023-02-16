@@ -156,13 +156,9 @@ export type LatencyMessage = BaseGatewayMessage & {
     type: "latency";
 };
 // From client.
-export type NowPlayingMessage = BaseGatewayMessage & {
-    type: "playing";
-    track: Track | null;
+export type SeekMessage = BaseGatewayMessage & {
+    type: "seek";
     seek: number;
-    sync?: boolean;
-    paused?: boolean;
-    seeked?: boolean;
 };
 /**
  * From client.
@@ -171,7 +167,14 @@ export type NowPlayingMessage = BaseGatewayMessage & {
 export type ListenMessage = BaseGatewayMessage & {
     type: "listen";
     with: string;
-}
+};
+// From client.
+export type PlayerMessage = BaseGatewayMessage & {
+    type: "player";
+    track: Track | null;
+    seek: number; // Track progress.
+    paused: boolean; // Is the player paused.
+};
 
 // To & from client.
 export type VolumeMessage = BaseGatewayMessage & {

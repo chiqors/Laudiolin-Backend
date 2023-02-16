@@ -61,12 +61,14 @@ function broadcast(userId: string, payload: GatewayMessage): void {
 const handlers = {
     /* Gateway ping. (client) */
     latency: require("messages/latency"),
-    /* Now playing. (client) */
-    playing: require("messages/playing"),
+    /* Player progress. (client) */
+    seek: require("messages/seek"),
     /* Update volume. (client) */
     volume: require("messages/volume"),
     /* Listen along. (client) */
     listen: require("messages/listen"),
+    /* Player state. (client) */
+    player: require("messages/player"),
 
     /* Load users. (bot) */
     "load-users": require("messages/bot/userLoad"),
@@ -210,6 +212,38 @@ export class Client {
             paused: this.listeningWith.paused,
             seek
         });
+    }
+
+    /**
+     * Syncs listeners with the host.
+     */
+    updateListeners(): void {
+        const listeners = Object.values(this.listeningAlong);
+        // Check if there are any listeners.
+        if (listeners.length < 1) return;
+
+        // Send a sync message to each listener.
+        listeners.forEach(listener =>
+            listener.syncWith(true));
+    }
+
+    /**
+     * Update the online status of the client.
+     */
+    async updateOnlineStatus(sync?: number): Promise<void> {
+        // Get the online user.
+        let online = onlineUsers[this.getUserId()];
+        if (!online) {
+            online = onlineUsers[this.getUserId()] =
+                await this.asOnlineUser();
+        }
+
+        // Validate the user.
+        if (!online) return;
+
+        // Update the online status.
+        online.listeningTo = this.listeningTo;
+        online.progress = sync ?? this.progress;
     }
 
     /**
