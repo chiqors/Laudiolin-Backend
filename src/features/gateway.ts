@@ -487,6 +487,13 @@ export class Client {
                         // Clear the existing presence.
                         await this.updatePresence();
                     }
+                } else {
+                    // Send an error message.
+                    this.send(constants.GATEWAY_INVALID_TOKEN());
+                    // Log a message to the console.
+                    logger.debug(`Client ${this.getId()} has provided an invalid token.`);
+                    // Disconnect the client.
+                    this.disconnect();
                 }
             }, 1000);
         }

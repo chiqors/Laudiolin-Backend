@@ -69,6 +69,13 @@ async function stream(req: Request, rsp: Response): Promise<void> {
         source = identifyId(id);
     }
 
+    // Set the response headers.
+    rsp.set({
+        "Connection": "keep-alive",
+        "Content-Type": "audio/mpeg",
+        "Transfer-Encoding": "chunked"
+    });
+
     // Download the video.
     switch (source) {
         case "YouTube":
