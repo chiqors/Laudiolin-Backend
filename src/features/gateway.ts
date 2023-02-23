@@ -170,7 +170,7 @@ export class Client {
         this.listeningWith = client;
 
         // Sync with the target.
-        this.syncWith();
+        this.syncWith(true);
     }
 
     /**
