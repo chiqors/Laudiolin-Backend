@@ -206,9 +206,10 @@ export async function download(isrc: string): Promise<string> {
  * @param isrc The ISRC of the track to download.
  * @param min The minimum byte range.
  * @param max The maximum byte range.
+ * @param quality The quality of the stream.
  */
 export async function stream(
-    isrc: string, min: number, max: number
+    isrc: string, min: number, max: number, quality: string
 ): Promise<{ buffer: Uint8Array, data: Format }> {
     // Check if the ID is an ISRC.
     if (isrc.length != 12) {

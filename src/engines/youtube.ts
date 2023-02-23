@@ -156,9 +156,10 @@ export async function download(url: string): Promise<string> {
  * @param url The URL of the video to stream.
  * @param min The minimum byte range.
  * @param max The maximum byte range.
+ * @param quality The quality of the stream.
  */
 export async function stream(
-    url: string, min: number, max: number
+    url: string, min: number, max: number, quality: string
 ): Promise<{ buffer: Uint8Array, data: Format }> {
     const id: string = url.includes("http") ? extractId(url) : url;
     const streamingData = await youtube.getStreamingData(id, downloadOptions);
@@ -166,6 +167,7 @@ export async function stream(
     // Download the video.
     const options = {
         ...downloadOptions,
+        quality: quality == "High" ? "best" : "bestefficiency",
         range: {
             start: min,
             end: Math.min(max, streamingData.content_length)

@@ -57,6 +57,7 @@ async function download(req: Request, rsp: Response): Promise<void> {
 async function stream(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
     const id: string = <string>req.query.id || "";
+    const quality: string = <string>req.query.quality || "High";
     let source: string = <string>req.query.engine || "";
 
     // Validate arguments.
@@ -92,11 +93,11 @@ async function stream(req: Request, rsp: Response): Promise<void> {
     let length: number = 0;
     switch (source) {
         case "YouTube":
-            data = await youtube.stream(id, start, end);
+            data = await youtube.stream(id, start, end, quality);
             bytes = data.buffer;
             break;
         case "Spotify":
-            data = await spotify.stream(id, start, end);
+            data = await spotify.stream(id, start, end, quality);
             bytes = data.buffer; length = data.data.content_length;
             break;
     }
