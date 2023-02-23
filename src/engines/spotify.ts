@@ -6,6 +6,7 @@ import SpotifyWebApi from "spotify-web-api-node";
 
 import * as youtube from "./youtube";
 import * as utils from "app/utils";
+import Format from "youtubei.js/dist/src/parser/classes/misc/Format";
 
 const spotify = new SpotifyWebApi({
     clientId: constants.SPOTIFY_CLIENT_ID,
@@ -203,8 +204,12 @@ export async function download(isrc: string): Promise<string> {
  * Uses the YouTube engine to download an associated video.
  * Pipes the data to the response.
  * @param isrc The ISRC of the track to download.
+ * @param min The minimum byte range.
+ * @param max The maximum byte range.
  */
-export async function stream(isrc: string): Promise<Uint8Array> {
+export async function stream(
+    isrc: string, min: number, max: number
+): Promise<{ buffer: Uint8Array, data: Format }> {
     // Check if the ID is an ISRC.
     if (isrc.length != 12) {
         // Get the ISRC from Spotify.
@@ -228,5 +233,5 @@ export async function stream(isrc: string): Promise<Uint8Array> {
     const topResultUrl = searchResults.top.url;
 
     // Download the track.
-    return await youtube.stream(topResultUrl);
+    return await youtube.stream(topResultUrl, min, max);
 }

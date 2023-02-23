@@ -4,6 +4,7 @@ import { Request, Response, Router } from "express";
 import * as youtube from "engines/youtube";
 import * as spotify from "engines/spotify";
 import { identifyId } from "app/utils";
+import Format from "youtubei.js/dist/src/parser/classes/misc/Format";
 
 /**
  * Download the specified video.
@@ -71,20 +72,32 @@ async function stream(req: Request, rsp: Response): Promise<void> {
 
     // Check for a range.
     const range = req.range(Infinity, { combine: true });
-    let start = 0, end = null;
+    let start = 0, end = 3e5;
     if (range) {
         start = range[0].start;
         end = range[0].end;
     }
 
+    if (end == Infinity) end = start + 3e5;
+
+    // Check if the range is valid.
+    if (start < 0 || end < 0 || start > end) {
+        rsp.status(400).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
     // Download the video.
+    let data: { buffer: Uint8Array, data: Format };
     let bytes: Uint8Array = null;
+    let length: number = 0;
     switch (source) {
         case "YouTube":
-            bytes = await youtube.stream(id);
+            data = await youtube.stream(id, start, end);
+            bytes = data.buffer;
             break;
         case "Spotify":
-            bytes = await spotify.stream(id);
+            data = await spotify.stream(id, start, end);
+            bytes = data.buffer; length = data.data.content_length;
             break;
     }
 
@@ -94,28 +107,32 @@ async function stream(req: Request, rsp: Response): Promise<void> {
         return;
     }
 
-    // Validate the end position.
-    const length = bytes.length;
-    if (end == Infinity) end = length - 1;
-    const chunkSize = (end - start) + 1;
-    // Get the chunk of bytes.
-    const chunk = bytes.slice(start, end + 1);
+    // Set the length.
+    length = data.data.content_length;
+    // Validate the end length.
+    if (end > length) end = length;
+    // Get the size of the chunk.
+    const chunkSize = end - start;
 
     // Prepare the headers.
     if (range) {
         rsp.writeHead(206, {
-            'Content-Range': 'bytes ' + start + '-' + end + '/' + length,
-            'Accept-Ranges': 'bytes', 'Content-Length': chunkSize,
+            'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + length,
+            'Content-Length': chunkSize,
+            'Accept-Ranges': 'bytes',
             'Content-Type': 'audio/mpeg'
         });
     } else {
         rsp.writeHead(200, {
             "Content-Length": length,
             "Content-Type": "audio/mpeg",
+            "Transfer-Encoding": "chunked",
+            "Accept-Ranges": "bytes"
         });
     }
     // Send the bytes.
-    rsp.write(chunk, () => rsp.end());
+    rsp.write(bytes);
+    rsp.end();
 }
 
 /**

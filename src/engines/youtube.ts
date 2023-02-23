@@ -2,16 +2,24 @@ import { logger } from "app/index";
 import constants from "app/constants";
 import { Innertube } from "youtubei.js";
 
-import { existsSync, createWriteStream, createReadStream, rmSync } from "node:fs";
+import { existsSync, createWriteStream, rmSync } from "node:fs";
 import { streamToIterable } from "youtubei.js/dist/src/utils/Utils";
 
 import { SearchResults, SearchResult, Playlist } from "app/types";
 import Music from "youtubei.js/dist/src/core/Music";
 import Video from "youtubei.js/dist/src/parser/classes/Video";
+import Format from "youtubei.js/dist/src/parser/classes/misc/Format";
 import PlaylistVideo from "youtubei.js/dist/src/parser/classes/PlaylistVideo";
+import { DownloadOptions } from "youtubei.js/dist/src/parser/youtube/VideoInfo";
 
 import * as utils from "app/utils";
 import ffmpeg from "fluent-ffmpeg";
+
+const downloadOptions: DownloadOptions = {
+    type: "audio",
+    quality: "best",
+    format: "any"
+};
 
 let youtube: Innertube | null = null;
 let music: Music | null = null;
@@ -143,53 +151,40 @@ export async function download(url: string): Promise<string> {
 
 /**
  * Streams the specified video.
- * This does not support MP3 conversion.
+ * Does not support MP3 conversion.
+ * Requires a minimum and maximum byte range.
  * @param url The URL of the video to stream.
+ * @param min The minimum byte range.
+ * @param max The maximum byte range.
  */
-export async function stream(url: string): Promise<Uint8Array> {
+export async function stream(
+    url: string, min: number, max: number
+): Promise<{ buffer: Uint8Array, data: Format }> {
     const id: string = url.includes("http") ? extractId(url) : url;
+    const streamingData = await youtube.getStreamingData(id, downloadOptions);
 
-    // Check if the video exists on the file system.
-    const filePath = `${constants.STORAGE_PATH}/${id}.mp3`;
+    // Download the video.
+    const options = {
+        ...downloadOptions,
+        range: {
+            start: min,
+            end: Math.min(max, streamingData.content_length)
+        }
+    };
+    const stream = await youtube.download(id, options);
 
-    // Check if the file already exists.
-    if (existsSync(filePath)) {
-        const fileStream = createReadStream(filePath);
-        return await utils.streamToBuffer(fileStream);
-    }
+    // Convert the stream to a buffer.
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of streamToIterable(stream))
+        chunks.push(chunk);
 
-    // Create a stream for the video.
-    const stream = await youtube.download(id, {
-        type: "audio",
-        quality: "best",
-        format: "any"
-    });
-
-    // Write the stream to a temporary file.
-    const temporary = `${filePath}.tmp`;
-    const fileStream = createWriteStream(temporary);
-    for await (const chunk of streamToIterable(stream)) fileStream.write(chunk);
-    fileStream.end();
-
-    // Convert the data with ffmpeg and pipe to the file.
-    await new Promise<string>((resolve, reject) => {
-        ffmpeg(temporary)
-            .on("end", () => {
-                resolve(filePath);
-
-                // Delete the temporary file.
-                rmSync(temporary, { force: true });
-            })
-            .on("error", err => {
-                reject(err); console.error("Error: ", err);
-            })
-            .audioBitrate(128)
-            .audioFrequency(44100)
-            .audioChannels(2)
-            .save(filePath)
-    });
-
-    // Return the data from the file.
-    const finalFile = createReadStream(filePath);
-    return await utils.streamToBuffer(finalFile);
+    // Return the buffer.
+    return {
+        data: streamingData,
+        buffer: chunks.reduce((a, b) => {
+            const c = new Uint8Array(a.length + b.length);
+            c.set(a); c.set(b, a.length);
+            return c;
+        }),
+    };
 }
