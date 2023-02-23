@@ -111,14 +111,12 @@ async function stream(req: Request, rsp: Response): Promise<void> {
     length = data.data.content_length;
     // Validate the end length.
     if (end > length) end = length;
-    // Get the size of the chunk.
-    const chunkSize = end - start;
 
     // Prepare the headers.
     if (range) {
         rsp.writeHead(206, {
             'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + length,
-            'Content-Length': chunkSize,
+            'Content-Length': length,
             'Accept-Ranges': 'bytes',
             'Content-Type': 'audio/mpeg'
         });
