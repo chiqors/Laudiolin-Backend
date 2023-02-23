@@ -203,9 +203,8 @@ export async function download(isrc: string): Promise<string> {
  * Uses the YouTube engine to download an associated video.
  * Pipes the data to the response.
  * @param isrc The ISRC of the track to download.
- * @param pipe The pipe to stream the data to.
  */
-export async function stream(isrc: string, pipe: any): Promise<void> {
+export async function stream(isrc: string): Promise<Uint8Array> {
     // Check if the ID is an ISRC.
     if (isrc.length != 12) {
         // Get the ISRC from Spotify.
@@ -229,5 +228,5 @@ export async function stream(isrc: string, pipe: any): Promise<void> {
     const topResultUrl = searchResults.top.url;
 
     // Download the track.
-    return await youtube.stream(topResultUrl, pipe);
+    return await youtube.stream(topResultUrl);
 }

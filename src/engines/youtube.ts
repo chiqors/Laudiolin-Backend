@@ -143,12 +143,10 @@ export async function download(url: string): Promise<string> {
 
 /**
  * Streams the specified video.
- * Pipes the data to the response.
  * This does not support MP3 conversion.
  * @param url The URL of the video to stream.
- * @param pipe The response to pipe the data to.
  */
-export async function stream(url: string, pipe: any): Promise<void> {
+export async function stream(url: string): Promise<Uint8Array> {
     const id: string = url.includes("http") ? extractId(url) : url;
 
     // Check if the video exists on the file system.
@@ -157,9 +155,7 @@ export async function stream(url: string, pipe: any): Promise<void> {
     // Check if the file already exists.
     if (existsSync(filePath)) {
         const fileStream = createReadStream(filePath);
-        for await (const chunk of fileStream) pipe.write(chunk);
-
-        return;
+        return await utils.streamToBuffer(fileStream);
     }
 
     // Create a stream for the video.
@@ -169,6 +165,31 @@ export async function stream(url: string, pipe: any): Promise<void> {
         format: "any"
     });
 
-    // Pipe the data to the response.
-    for await (const chunk of streamToIterable(stream)) pipe.write(chunk);
+    // Write the stream to a temporary file.
+    const temporary = `${filePath}.tmp`;
+    const fileStream = createWriteStream(temporary);
+    for await (const chunk of streamToIterable(stream)) fileStream.write(chunk);
+    fileStream.end();
+
+    // Convert the data with ffmpeg and pipe to the file.
+    await new Promise<string>((resolve, reject) => {
+        ffmpeg(temporary)
+            .on("end", () => {
+                resolve(filePath);
+
+                // Delete the temporary file.
+                rmSync(temporary, { force: true });
+            })
+            .on("error", err => {
+                reject(err); console.error("Error: ", err);
+            })
+            .audioBitrate(128)
+            .audioFrequency(44100)
+            .audioChannels(2)
+            .save(filePath)
+    });
+
+    // Return the data from the file.
+    const finalFile = createReadStream(filePath);
+    return await utils.streamToBuffer(finalFile);
 }

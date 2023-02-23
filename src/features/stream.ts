@@ -69,25 +69,53 @@ async function stream(req: Request, rsp: Response): Promise<void> {
         source = identifyId(id);
     }
 
-    // Set the response headers.
-    rsp.set({
-        "Connection": "keep-alive",
-        "Content-Type": "audio/mpeg",
-        "Transfer-Encoding": "chunked"
-    });
+    // Check for a range.
+    const range = req.range(Infinity, { combine: true });
+    let start = 0, end = null;
+    if (range) {
+        start = range[0].start;
+        end = range[0].end;
+    }
 
     // Download the video.
+    let bytes: Uint8Array = null;
     switch (source) {
         case "YouTube":
-            await youtube.stream(id, rsp);
+            bytes = await youtube.stream(id);
             break;
         case "Spotify":
-            await spotify.stream(id, rsp);
+            bytes = await spotify.stream(id);
             break;
     }
 
-    // Send a status response.
-    // rsp.status(400).send(constants.INTERNAL_ERROR());
+    // Check if the bytes are empty.
+    if (bytes == null) {
+        rsp.status(404).send(constants.INVALID_ARGUMENTS());
+        return;
+    }
+
+    // Validate the end position.
+    const length = bytes.length;
+    if (end == Infinity) end = length - 1;
+    const chunkSize = (end - start) + 1;
+    // Get the chunk of bytes.
+    const chunk = bytes.slice(start, end + 1);
+
+    // Prepare the headers.
+    if (range) {
+        rsp.writeHead(206, {
+            'Content-Range': 'bytes ' + start + '-' + end + '/' + length,
+            'Accept-Ranges': 'bytes', 'Content-Length': chunkSize,
+            'Content-Type': 'audio/mpeg'
+        });
+    } else {
+        rsp.writeHead(200, {
+            "Content-Length": length,
+            "Content-Type": "audio/mpeg",
+        });
+    }
+    // Send the bytes.
+    rsp.write(chunk, () => rsp.end());
 }
 
 /**

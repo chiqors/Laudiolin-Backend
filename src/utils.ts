@@ -4,7 +4,7 @@ import type { TTransportLogger } from "tslog";
 import type { ILogObject, IErrorObject } from "tslog/src/interfaces";
 
 import ProxyAgent from "proxy-agent";
-import { readFileSync } from "node:fs";
+import { readFileSync, ReadStream } from "node:fs";
 import constants from "./constants";
 import { logger } from "app/index";
 
@@ -177,6 +177,19 @@ export function shuffle<T>(array: T[]): T[] {
  */
 export async function toBuffer(blob: Blob): Promise<Buffer> {
     return Buffer.from(await blob.arrayBuffer());
+}
+
+/**
+ * Converts a ReadStream to a Buffer.
+ * @param stream The ReadStream to convert.
+ */
+export async function streamToBuffer(stream: ReadStream): Promise<Buffer> {
+    return new Promise<Buffer>((resolve, reject) => {
+        const chunks = [];
+        stream.on("data", chunk => chunks.push(Buffer.from(chunk)));
+        stream.on("end", () => resolve(Buffer.concat(chunks)));
+        stream.on("error", reject);
+    });
 }
 
 /**
