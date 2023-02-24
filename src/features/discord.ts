@@ -103,25 +103,7 @@ export async function updatePresence(
 
     if (!user) return; // Check if the user is invalid.
     await renew(user); // Check if the user needs to refresh.
-
-    {
-        // Delete the presence.
-        const response = await fetch(`${constants.DISCORD_PRESENCE}/delete`, {
-            method: "POST", headers: {
-                Authorization: `${user.type} ${user.discord}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ token: user.presenceToken })
-        });
-
-        // Check if a rate limit has been hit.
-        if (response.status == 429) {
-            const { retry_after } = await response.json();
-            // Retry after the rate limit.
-            setTimeout(() => updatePresence(user, presence), retry_after * 1000);
-            return;
-        }
-    }
+    const oldPresenceToken = user.presenceToken; // Get the old presence token.
 
     if (presence == null) {
         // Delete the token.
@@ -163,6 +145,25 @@ export async function updatePresence(
             await database.updateUser(user);
         } catch (err) {
             throw err;
+        }
+    }
+
+    {
+        // Delete the presence.
+        const response = await fetch(`${constants.DISCORD_PRESENCE}/delete`, {
+            method: "POST", headers: {
+                Authorization: `${user.type} ${user.discord}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ token: oldPresenceToken })
+        });
+
+        // Check if a rate limit has been hit.
+        if (response.status == 429) {
+            const { retry_after } = await response.json();
+            // Retry after the rate limit.
+            setTimeout(() => updatePresence(user, presence), retry_after * 1000);
+            return;
         }
     }
 }
