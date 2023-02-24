@@ -365,7 +365,7 @@ export class Client {
         // Pull the list of recently played tracks.
         const recentlyPlayed = user.recentlyPlayed || [];
         // Check if the track is already in the list.
-        const index = recentlyPlayed.findIndex(t => t.id == track.id);
+        const index = recentlyPlayed.findIndex(t => t?.id == track?.id);
         if (index != -1)
             // Remove the track from the list.
             recentlyPlayed.splice(index, 1);
