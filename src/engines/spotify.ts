@@ -234,5 +234,5 @@ export async function stream(
     const topResultUrl = searchResults.top.url;
 
     // Download the track.
-    return await youtube.stream(topResultUrl, min, max);
+    return await youtube.stream(topResultUrl, min, max, quality);
 }
