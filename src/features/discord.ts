@@ -7,7 +7,42 @@ import { Request, Response, Router } from "express";
 
 import * as database from "features/database";
 import { defaultObject } from "app/utils";
-import { Presence } from "app/types";
+import type { Presence } from "app/types";
+
+/**
+ * Sets the user's data.
+ * @param user The user to set.
+ */
+export async function fetchUserData(user: User): Promise<boolean> {
+    // Get the user authorization.
+    const token_type = user.type;
+    const access_token = user.accessToken;
+
+    // Get the user information.
+    const userResponse = await fetch(constants.DISCORD_USER_INFO, {
+        method: "GET",
+        headers: {
+            authorization: `${token_type} ${access_token}`
+        }
+    });
+
+    // Get the user data.
+    const userData = await userResponse.json();
+    if (!userData || !userResponse.ok) {
+        return false;
+    }
+
+    // Pull data from the user response.
+    const { id, avatar, username, discriminator } = userData;
+    // Get the avatar URL.
+    const avatarUrl = getAvatarUrl(id, avatar);
+
+    // Update the user object.
+    user.userId = id;
+    user.username = username;
+    user.discriminator = discriminator;
+    user.avatar = avatarUrl;
+}
 
 /**
  * Renews a user's access token.
@@ -48,6 +83,8 @@ export async function renew(user: User): Promise<void> {
     user.expires = Date.now() + (data.expires_in ?? 0) * 1000;
     user.refresh = data.refresh_token ?? user.refresh;
     user.scope = data.scope ?? user.scope;
+    // Update the user's data.
+    await fetchUserData(user);
 
     // Save the user.
     database.updateUser(user)
@@ -219,35 +256,11 @@ async function handle(req: Request, rsp: Response): Promise<void> {
     // Pull data from the response.
     const { access_token, refresh_token,
         token_type, scope, expires_in } = data;
-    // Get the user information.
-    const userResponse = await fetch(constants.DISCORD_USER_INFO, {
-        method: "GET",
-        headers: {
-            authorization: `${token_type} ${access_token}`
-        }
-    });
-
-    // Get the user data.
-    const userData = await userResponse.json();
-    if (!userData || !userResponse.ok) {
-        rsp.status(400).send(constants.INVALID_TOKEN());
-        return;
-    }
-
-    // Pull data from the user response.
-    const { id, avatar, username, discriminator } = userData;
     // Generate a new token.
     const token = await database.generateUserToken();
-    // Get the avatar URL.
-    const avatarUrl = getAvatarUrl(id, avatar);
-
     // Save the data to the database.
-    const newUserData = {
-        userId: id,
-        username,
-        discriminator,
+    const newUserData: User = {
         accessToken: token,
-        avatar: avatarUrl,
 
         scope,
         type: token_type,
@@ -256,7 +269,15 @@ async function handle(req: Request, rsp: Response): Promise<void> {
         expires: Date.now() + (expires_in * 1000)
     };
 
+    // Fetch the user's data.
+    const result = await fetchUserData(newUserData);
+    if (!result) {
+        rsp.status(400).send(constants.INVALID_TOKEN());
+        return;
+    }
+
     // Check if the user already exists.
+    const id = newUserData.userId;
     const user = await database.getUser(id);
     if (user == null)
         await database.saveUser(defaultObject<User>(constants.DEFAULT_USER, newUserData));
