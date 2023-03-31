@@ -16,7 +16,7 @@ import type { Presence } from "app/types";
 export async function fetchUserData(user: User): Promise<boolean> {
     // Get the user authorization.
     const token_type = user.type;
-    const access_token = user.accessToken;
+    const access_token = user.discord;
 
     // Get the user information.
     const userResponse = await fetch(constants.DISCORD_USER_INFO, {
@@ -42,6 +42,8 @@ export async function fetchUserData(user: User): Promise<boolean> {
     user.username = username;
     user.discriminator = discriminator;
     user.avatar = avatarUrl;
+
+    return true;
 }
 
 /**
@@ -79,6 +81,7 @@ export async function renew(user: User): Promise<void> {
     if (!data.access_token) return;
 
     // Update the user's access token.
+    user.type = data.token_type ?? user.type;
     user.discord = data.access_token;
     user.expires = Date.now() + (data.expires_in ?? 0) * 1000;
     user.refresh = data.refresh_token ?? user.refresh;
