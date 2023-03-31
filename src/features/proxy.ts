@@ -16,7 +16,7 @@ const youTubeUrl = `https://i.ytimg.com/vi`
  */
 async function handle(req: Request, rsp: Response): Promise<void> {
     // Pull arguments.
-    const url: string = req.params.arg;
+    let url: string = req.params.arg;
     const from: string = <string>(req.query.from || "");
 
     // Check if the arguments are valid.
@@ -33,6 +33,10 @@ async function handle(req: Request, rsp: Response): Promise<void> {
             rsp.status(400).send(constants.INVALID_ARGUMENTS());
             return;
         case "cart": // Google cover art.
+            // Adjust the URL.
+            url = url.slice(0, url.indexOf("=w"));
+            url += "=w512-h512-l90-rj?from=cart";
+
             response = await fetch(`${googleUrl}/${url}`);
             buffer = await response.blob();
             break;
